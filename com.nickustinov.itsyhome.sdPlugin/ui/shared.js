@@ -44,6 +44,7 @@ async function populateTargetSelect(selectElement, port, currentValue, options) 
     const fetches = [fetchDevices(port)];
     if (showGroups) fetches.push(fetchGroups(port));
     const [devices, groups] = await Promise.all(fetches);
+    cachedDevices = devices || [];
 
     selectElement.innerHTML = '<option value="">Select a device...</option>';
 
@@ -111,6 +112,85 @@ async function populateSceneSelect(selectElement, port, currentValue) {
     selectElement.innerHTML = '<option value="">Error: Is Itsyhome running?</option>';
     showConnectionError();
   }
+}
+
+// Device cache for auto-selecting icons based on device type
+let cachedDevices = [];
+
+/**
+ * Icon picker: define which icons are available per action type.
+ */
+const ICON_SETS = {
+  toggle: ["light", "switch", "outlet", "fan", "group", "lightbulb-filament", "lamp", "lamp-pendant", "sun-dim", "television", "speaker-hifi", "house-simple"],
+  scene: ["sparkle", "star", "moon", "moon-stars", "sun", "sun-horizon", "couch", "play", "magic-wand", "bed", "television", "music-notes", "house-simple"],
+  lock: ["lock", "lock-key", "key", "shield-check", "door"],
+  brightness: ["light", "lamp", "lamp-pendant", "sun-dim"],
+  "garage-door": ["garage-door", "garage"],
+};
+
+/**
+ * Maps device type (from API) to the default icon style.
+ */
+const DEVICE_TYPE_DEFAULT_ICON = {
+  "light": "light",
+  "switch": "switch",
+  "outlet": "outlet",
+  "fan": "fan",
+  "lock": "lock",
+  "temperature-sensor": "thermometer-simple",
+  "humidity-sensor": "drop",
+};
+
+/**
+ * Build the icon picker HTML inside a container element.
+ * @param {HTMLElement} container - The .icon-picker element
+ * @param {string[]} iconList - List of icon names
+ */
+function buildIconPicker(container, iconList) {
+  container.innerHTML = "";
+  for (const icon of iconList) {
+    const div = document.createElement("div");
+    div.className = "icon-picker-option";
+    div.dataset.value = icon;
+    const img = document.createElement("img");
+    img.src = `../imgs/device-types/${icon}-on@2x.png`;
+    div.appendChild(img);
+    container.appendChild(div);
+  }
+}
+
+/**
+ * Select an icon in the picker by value.
+ */
+function selectIcon(container, value) {
+  container.querySelectorAll(".icon-picker-option").forEach(el => {
+    el.classList.toggle("selected", el.dataset.value === value);
+  });
+}
+
+/**
+ * Set up click handling on an icon picker.
+ * @param {HTMLElement} container - The .icon-picker element
+ * @param {function} onSelect - Callback with selected value
+ */
+function initIconPicker(container, onSelect) {
+  container.addEventListener("click", (e) => {
+    const option = e.target.closest(".icon-picker-option");
+    if (!option) return;
+    selectIcon(container, option.dataset.value);
+    onSelect(option.dataset.value);
+  });
+}
+
+/**
+ * Get the device type for a target value from the cached device list.
+ */
+function getDeviceType(targetValue) {
+  for (const device of cachedDevices) {
+    const value = device.room ? `${device.room}/${device.name}` : device.name;
+    if (value === targetValue) return device.type;
+  }
+  return null;
 }
 
 function showConnectionError() {

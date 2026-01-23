@@ -12,6 +12,7 @@ import { ItsyhomeClient, type DeviceState } from "../api/itsyhome-client";
 type GarageDoorSettings = {
   target: string;
   port: number;
+  iconStyle?: string;
 };
 
 const POLL_INTERVAL_MS = 3000;
@@ -25,7 +26,7 @@ export class GarageDoorAction extends SingletonAction<GarageDoorSettings> {
   private optimisticUntil = new Map<string, number>();
 
   override async onWillAppear(ev: WillAppearEvent<GarageDoorSettings>): Promise<void> {
-    const { target, port } = ev.payload.settings;
+    const { target, port, iconStyle } = ev.payload.settings;
     this.activeContexts.add(ev.action.id);
 
     if (port) {
@@ -33,10 +34,10 @@ export class GarageDoorAction extends SingletonAction<GarageDoorSettings> {
     }
 
     // Show closed state until first poll confirms actual state
-    await this.applyVisualState(ev.action as KeyAction<GarageDoorSettings>, "closed");
+    await this.applyVisualState(ev.action as KeyAction<GarageDoorSettings>, "closed", iconStyle);
 
     if (target) {
-      await this.updateState(ev.action as KeyAction<GarageDoorSettings>, target);
+      await this.updateState(ev.action as KeyAction<GarageDoorSettings>, target, iconStyle);
     }
 
     this.startPolling();
@@ -50,19 +51,21 @@ export class GarageDoorAction extends SingletonAction<GarageDoorSettings> {
   }
 
   override async onDidReceiveSettings(ev: DidReceiveSettingsEvent<GarageDoorSettings>): Promise<void> {
-    const { target, port } = ev.payload.settings;
+    const { target, port, iconStyle } = ev.payload.settings;
 
     if (port) {
       this.client = new ItsyhomeClient(undefined, port);
     }
 
     if (target) {
-      await this.updateState(ev.action as KeyAction<GarageDoorSettings>, target);
+      await this.updateState(ev.action as KeyAction<GarageDoorSettings>, target, iconStyle);
+    } else {
+      await this.applyVisualState(ev.action as KeyAction<GarageDoorSettings>, "closed", iconStyle);
     }
   }
 
   override async onKeyDown(ev: KeyDownEvent<GarageDoorSettings>): Promise<void> {
-    const { target } = ev.payload.settings;
+    const { target, iconStyle } = ev.payload.settings;
 
     if (!target) {
       await ev.action.showAlert();
@@ -82,7 +85,7 @@ export class GarageDoorAction extends SingletonAction<GarageDoorSettings> {
       const newState = currentState === "closed" || currentState === "closing" ? "open" : "closed";
       this.stateCache.set(target, newState);
       this.optimisticUntil.set(target, Date.now() + 30000);
-      await this.applyVisualState(ev.action as KeyAction<GarageDoorSettings>, newState);
+      await this.applyVisualState(ev.action as KeyAction<GarageDoorSettings>, newState, iconStyle);
     } catch (err) {
       streamDeck.logger.error(`Garage door toggle error: ${err}`);
       await ev.action.showAlert();
@@ -97,7 +100,7 @@ export class GarageDoorAction extends SingletonAction<GarageDoorSettings> {
         if (!("setState" in action)) continue;
         const settings = await action.getSettings<GarageDoorSettings>();
         if (settings.target) {
-          await this.updateState(action as KeyAction<GarageDoorSettings>, settings.target);
+          await this.updateState(action as KeyAction<GarageDoorSettings>, settings.target, settings.iconStyle);
         }
       }
     }, POLL_INTERVAL_MS);
@@ -110,7 +113,7 @@ export class GarageDoorAction extends SingletonAction<GarageDoorSettings> {
     }
   }
 
-  private async updateState(action: KeyAction<GarageDoorSettings>, target: string): Promise<void> {
+  private async updateState(action: KeyAction<GarageDoorSettings>, target: string, iconStyle?: string): Promise<void> {
     try {
       const holdUntil = this.optimisticUntil.get(target);
       if (holdUntil && Date.now() < holdUntil) return;
@@ -123,15 +126,16 @@ export class GarageDoorAction extends SingletonAction<GarageDoorSettings> {
       const state = device.state as DeviceState | undefined;
       const doorState = state?.doorState ?? "closed";
       this.stateCache.set(target, doorState);
-      await this.applyVisualState(action, doorState);
+      await this.applyVisualState(action, doorState, iconStyle);
     } catch {
       // Server might not be running
     }
   }
 
-  private async applyVisualState(action: KeyAction<GarageDoorSettings>, doorState: string): Promise<void> {
+  private async applyVisualState(action: KeyAction<GarageDoorSettings>, doorState: string, iconStyle?: string): Promise<void> {
     const isOpen = doorState === "open" || doorState === "opening";
-    await action.setImage(`imgs/device-types/garage-door-${isOpen ? "on" : "off"}.png`);
+    const icon = iconStyle || "garage-door";
+    await action.setImage(`imgs/device-types/${icon}-${isOpen ? "on" : "off"}.png`);
     await action.setState(isOpen ? 1 : 0);
   }
 }

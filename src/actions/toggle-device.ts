@@ -13,6 +13,7 @@ import { getDeviceIcon, getGroupIcon } from "../icons";
 type ToggleSettings = {
   target: string;
   port: number;
+  iconStyle?: string;
 };
 
 const POLL_INTERVAL_MS = 3000;
@@ -30,7 +31,7 @@ export class ToggleDeviceAction extends SingletonAction<ToggleSettings> {
   private deviceCache = new Map<string, DeviceCache>();
 
   override async onWillAppear(ev: WillAppearEvent<ToggleSettings>): Promise<void> {
-    const { target, port } = ev.payload.settings;
+    const { target, port, iconStyle } = ev.payload.settings;
     this.activeContexts.add(ev.action.id);
 
     if (port) {
@@ -38,7 +39,7 @@ export class ToggleDeviceAction extends SingletonAction<ToggleSettings> {
     }
 
     if (target) {
-      await this.updateState(ev.action as KeyAction<ToggleSettings>, target);
+      await this.updateState(ev.action as KeyAction<ToggleSettings>, target, iconStyle);
     }
 
     this.startPolling();
@@ -52,14 +53,14 @@ export class ToggleDeviceAction extends SingletonAction<ToggleSettings> {
   }
 
   override async onDidReceiveSettings(ev: DidReceiveSettingsEvent<ToggleSettings>): Promise<void> {
-    const { target, port } = ev.payload.settings;
+    const { target, port, iconStyle } = ev.payload.settings;
 
     if (port) {
       this.client = new ItsyhomeClient(undefined, port);
     }
 
     if (target) {
-      await this.updateState(ev.action as KeyAction<ToggleSettings>, target);
+      await this.updateState(ev.action as KeyAction<ToggleSettings>, target, iconStyle);
     }
   }
 
@@ -84,7 +85,7 @@ export class ToggleDeviceAction extends SingletonAction<ToggleSettings> {
       if (cached) {
         const newIsOn = !cached.isOn;
         this.deviceCache.set(target, { ...cached, isOn: newIsOn });
-        await this.applyVisualState(ev.action as KeyAction<ToggleSettings>, target, cached.type, newIsOn);
+        await this.applyVisualState(ev.action as KeyAction<ToggleSettings>, target, cached.type, newIsOn, ev.payload.settings.iconStyle);
       }
     } catch (err) {
       streamDeck.logger.error(`Toggle error: ${err}`);
@@ -100,7 +101,7 @@ export class ToggleDeviceAction extends SingletonAction<ToggleSettings> {
         if (!("setState" in action)) continue;
         const settings = await action.getSettings<ToggleSettings>();
         if (settings.target) {
-          await this.updateState(action as KeyAction<ToggleSettings>, settings.target);
+          await this.updateState(action as KeyAction<ToggleSettings>, settings.target, settings.iconStyle);
         }
       }
     }, POLL_INTERVAL_MS);
@@ -113,7 +114,7 @@ export class ToggleDeviceAction extends SingletonAction<ToggleSettings> {
     }
   }
 
-  private async updateState(action: KeyAction<ToggleSettings>, target: string): Promise<void> {
+  private async updateState(action: KeyAction<ToggleSettings>, target: string, iconStyle?: string): Promise<void> {
     try {
       const info = await this.client.getDeviceInfo(target);
       const device = Array.isArray(info) ? info[0] : info;
@@ -123,7 +124,7 @@ export class ToggleDeviceAction extends SingletonAction<ToggleSettings> {
       const isOn = state?.on ?? false;
 
       this.deviceCache.set(target, { type: device.type, isOn });
-      await this.applyVisualState(action, target, device.type, isOn);
+      await this.applyVisualState(action, target, device.type, isOn, iconStyle);
     } catch {
       // Server might not be running — silently ignore
     }
@@ -134,9 +135,16 @@ export class ToggleDeviceAction extends SingletonAction<ToggleSettings> {
     target: string,
     deviceType: string,
     isOn: boolean,
+    iconStyle?: string,
   ): Promise<void> {
-    const isGroup = target.startsWith("group.");
-    const icon = isGroup ? getGroupIcon(isOn) : getDeviceIcon(deviceType, isOn);
+    const state = isOn ? "on" : "off";
+    let icon: string;
+    if (iconStyle) {
+      icon = `imgs/device-types/${iconStyle}-${state}.png`;
+    } else {
+      const isGroup = target.startsWith("group.");
+      icon = isGroup ? getGroupIcon(isOn) : getDeviceIcon(deviceType, isOn);
+    }
 
     await action.setImage(icon);
     await action.setState(isOn ? 1 : 0);

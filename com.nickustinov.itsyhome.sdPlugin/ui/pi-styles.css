@@ -101,3 +101,37 @@ button.refresh-btn {
 button.refresh-btn:hover {
   border-color: var(--sd-accent);
 }
+
+.icon-picker {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.icon-picker-option {
+  background-color: var(--sd-bg-secondary);
+  border: 2px solid var(--sd-border);
+  border-radius: var(--sd-radius);
+  cursor: pointer;
+  width: 48px;
+  height: 48px;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.icon-picker-option:hover {
+  border-color: var(--sd-accent);
+}
+
+.icon-picker-option.selected {
+  border-color: var(--sd-accent);
+  background-color: rgba(0, 120, 212, 0.15);
+}
+
+.icon-picker-option img {
+  width: 64px;
+  height: 64px;
+  margin-top: 12px;
+}

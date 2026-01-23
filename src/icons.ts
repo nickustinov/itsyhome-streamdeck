@@ -38,10 +38,6 @@ export function getThermostatIcon(deviceType: string, isOn: boolean, mode: strin
   return `imgs/device-types/${base}-off.png`;
 }
 
-export function getSceneIcon(): string {
-  return "imgs/device-types/scene-on.png";
-}
-
 export function getGroupIcon(isOn: boolean): string {
   const state = isOn ? "on" : "off";
   return `imgs/device-types/group-${state}.png`;

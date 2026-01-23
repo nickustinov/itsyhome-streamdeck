@@ -17,6 +17,11 @@
     </div>
 
     <div class="sdpi-item">
+      <label class="sdpi-item-label">Icon</label>
+      <div class="icon-picker" id="icon-picker"></div>
+    </div>
+
+    <div class="sdpi-item">
       <label class="sdpi-item-label">Port</label>
       <input type="number" id="port" placeholder="8423" min="1" max="65535" />
     </div>
@@ -34,11 +39,16 @@
   <script src="shared.js"></script>
   <script>
     const sceneSelect = document.getElementById("scene");
+    const iconPicker = document.getElementById("icon-picker");
     const portInput = document.getElementById("port");
     const refreshBtn = document.getElementById("refresh");
 
+    buildIconPicker(iconPicker, ICON_SETS.scene);
+    initIconPicker(iconPicker, (value) => saveSettings({ iconStyle: value }));
+
     function onSettingsLoaded(settings) {
       portInput.value = settings.port || "";
+      selectIcon(iconPicker, settings.iconStyle || "sparkle");
       hideConnectionError();
       populateSceneSelect(sceneSelect, settings.port, settings.scene);
     }

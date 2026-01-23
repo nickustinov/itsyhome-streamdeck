@@ -6,11 +6,11 @@ import streamDeck, {
   WillAppearEvent,
 } from "@elgato/streamdeck";
 import { ItsyhomeClient } from "../api/itsyhome-client";
-import { getSceneIcon } from "../icons";
 
 type SceneSettings = {
   scene: string;
   port: number;
+  iconStyle?: string;
 };
 
 @action({ UUID: "com.nickustinov.itsyhome.scene" })
@@ -18,26 +18,26 @@ export class ExecuteSceneAction extends SingletonAction<SceneSettings> {
   private client = new ItsyhomeClient();
 
   override async onWillAppear(ev: WillAppearEvent<SceneSettings>): Promise<void> {
-    const { scene, port } = ev.payload.settings;
+    const { scene, port, iconStyle } = ev.payload.settings;
 
     if (port) {
       this.client = new ItsyhomeClient(undefined, port);
     }
 
-    await ev.action.setImage(getSceneIcon());
+    await ev.action.setImage(`imgs/device-types/${iconStyle || "sparkle"}-on.png`);
     if (scene) {
       await ev.action.setTitle(scene);
     }
   }
 
   override async onDidReceiveSettings(ev: DidReceiveSettingsEvent<SceneSettings>): Promise<void> {
-    const { scene, port } = ev.payload.settings;
+    const { scene, port, iconStyle } = ev.payload.settings;
 
     if (port) {
       this.client = new ItsyhomeClient(undefined, port);
     }
 
-    await ev.action.setImage(getSceneIcon());
+    await ev.action.setImage(`imgs/device-types/${iconStyle || "sparkle"}-on.png`);
     if (scene) {
       await ev.action.setTitle(scene);
     }
