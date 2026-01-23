@@ -142,6 +142,16 @@ describe("ItsyhomeClient", () => {
     });
   });
 
+  describe("setPosition", () => {
+    it("sends position command", async () => {
+      mockResponse({ status: "success" });
+
+      const result = await client.setPosition("Living Room/Blinds", 75);
+      expect(result).toEqual({ status: "success" });
+      expect(mockFetch).toHaveBeenCalledWith("http://127.0.0.1:8423/position/75/Living%20Room%2FBlinds");
+    });
+  });
+
   describe("executeScene", () => {
     it("sends scene execution command", async () => {
       mockResponse({ status: "success" });

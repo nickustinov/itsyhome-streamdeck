@@ -4,4 +4,5 @@ com.nickustinov.itsyhome.sdPlugin/logs/
 *.js.map
 dist/
 docs/
+coverage/
 .DS_Store

@@ -1,5 +1,7 @@
 # Itsyhome Stream Deck plugin
 
+[![Tests](https://github.com/nickustinov/itsyhome-streamdeck/actions/workflows/test.yml/badge.svg)](https://github.com/nickustinov/itsyhome-streamdeck/actions/workflows/test.yml)
+
 Stream Deck plugin for [Itsyhome](https://itsyhome.app) — control your HomeKit devices directly from your Elgato Stream Deck.
 
 ![Itsyhome Stream Deck plugin](itsyhome-streamdeck.png)
