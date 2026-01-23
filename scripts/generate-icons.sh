@@ -40,12 +40,12 @@ ICONS=(
   "power:power:$ORANGE:$GRAY"
   "toggle-right:toggle-right:$ORANGE:$GRAY"
 
-  # Lock icons (off = green, locked/unlocked)
-  "lock:lock:$ORANGE:$GREEN"
-  "lock-key:lock-key:$ORANGE:$GREEN"
-  "key:key:$ORANGE:$GREEN"
-  "shield-check:shield-check:$ORANGE:$GREEN"
-  "door:door:$ORANGE:$GREEN"
+  # Lock icons (on/locked = green, off/unlocked = orange)
+  "lock:lock:$GREEN:$ORANGE"
+  "lock-key:lock-key:$GREEN:$ORANGE"
+  "key:key:$GREEN:$ORANGE"
+  "shield-check:shield-check:$GREEN:$ORANGE"
+  "door:door:$GREEN:$ORANGE"
 
   # Garage icons (off = green)
   "garage-door:car-simple:$ORANGE:$GREEN"
