@@ -2,6 +2,8 @@
 
 Stream Deck plugin for [Itsyhome](https://itsyhome.app) — control your HomeKit devices directly from your Elgato Stream Deck.
 
+![Itsyhome Stream Deck plugin](itsyhome-streamdeck.png)
+
 Requires **Itsyhome Pro** with the webhook server enabled (runs on `localhost:8423`).
 
 ## Actions
