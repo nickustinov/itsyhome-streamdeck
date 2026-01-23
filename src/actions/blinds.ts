@@ -1,0 +1,139 @@
+import streamDeck, {
+  action,
+  DidReceiveSettingsEvent,
+  KeyDownEvent,
+  SingletonAction,
+  WillAppearEvent,
+  WillDisappearEvent,
+} from "@elgato/streamdeck";
+import { ItsyhomeClient, type DeviceState } from "../api/itsyhome-client";
+
+type BlindsSettings = {
+  target: string;
+  direction: "open" | "close";
+  label: string;
+  port: number;
+};
+
+const POLL_INTERVAL_MS = 3000;
+
+@action({ UUID: "com.nickustinov.itsyhome.blinds" })
+export class BlindsAction extends SingletonAction<BlindsSettings> {
+  private client = new ItsyhomeClient();
+  private pollTimer: ReturnType<typeof setInterval> | null = null;
+  private activeContexts = new Set<string>();
+
+  override async onWillAppear(ev: WillAppearEvent<BlindsSettings>): Promise<void> {
+    const { target, port } = ev.payload.settings;
+    this.activeContexts.add(ev.action.id);
+
+    if (port) {
+      this.client = new ItsyhomeClient(undefined, port);
+    }
+
+    if (target) {
+      await this.updateDisplay(ev.action, target, ev.payload.settings);
+    } else {
+      await this.applyDirectionIcon(ev.action, ev.payload.settings);
+    }
+
+    this.startPolling();
+  }
+
+  override onWillDisappear(ev: WillDisappearEvent<BlindsSettings>): void {
+    this.activeContexts.delete(ev.action.id);
+    if (this.activeContexts.size === 0) {
+      this.stopPolling();
+    }
+  }
+
+  override async onDidReceiveSettings(ev: DidReceiveSettingsEvent<BlindsSettings>): Promise<void> {
+    const { target, port } = ev.payload.settings;
+
+    if (port) {
+      this.client = new ItsyhomeClient(undefined, port);
+    }
+
+    if (target) {
+      await this.updateDisplay(ev.action, target, ev.payload.settings);
+    } else {
+      await this.applyDirectionIcon(ev.action, ev.payload.settings);
+    }
+  }
+
+  override async onKeyDown(ev: KeyDownEvent<BlindsSettings>): Promise<void> {
+    const { target, direction } = ev.payload.settings;
+
+    if (!target || !direction) {
+      await ev.action.showAlert();
+      return;
+    }
+
+    const position = direction === "open" ? 100 : 0;
+
+    try {
+      const result = await this.client.setPosition(target, position);
+      if (result.status === "error") {
+        streamDeck.logger.error(`Blinds ${direction} failed: ${result.message}`);
+        await ev.action.showAlert();
+        return;
+      }
+
+      await ev.action.showOk();
+    } catch (err) {
+      streamDeck.logger.error(`Blinds error: ${err}`);
+      await ev.action.showAlert();
+    }
+  }
+
+  private startPolling(): void {
+    if (this.pollTimer) return;
+
+    this.pollTimer = setInterval(async () => {
+      for (const action of this.actions) {
+        const settings = await action.getSettings<BlindsSettings>();
+        if (settings.target) {
+          await this.updateDisplay(action, settings.target, settings);
+        }
+      }
+    }, POLL_INTERVAL_MS);
+  }
+
+  private stopPolling(): void {
+    if (this.pollTimer) {
+      clearInterval(this.pollTimer);
+      this.pollTimer = null;
+    }
+  }
+
+  private async applyDirectionIcon(
+    action: { setImage(image: string): Promise<void> },
+    settings: BlindsSettings,
+  ): Promise<void> {
+    const direction = settings.direction || "open";
+    await action.setImage(`imgs/device-types/blinds-${direction}.png`);
+  }
+
+  private async updateDisplay(
+    action: { setTitle(title: string): Promise<void>; setImage(image: string): Promise<void> },
+    target: string,
+    settings: BlindsSettings,
+  ): Promise<void> {
+    try {
+      const info = await this.client.getDeviceInfo(target);
+      const device = Array.isArray(info) ? info[0] : info;
+      if (!device) return;
+
+      const state = device.state as DeviceState | undefined;
+      const position = state?.position;
+
+      await this.applyDirectionIcon(action, settings);
+      const posStr = position != null ? `${position}%` : "";
+      const label = settings.label;
+      const title = label && posStr ? `${label}\n${posStr}` : label || posStr;
+      await action.setTitle(title);
+    } catch {
+      // Server might not be running
+    }
+  }
+}

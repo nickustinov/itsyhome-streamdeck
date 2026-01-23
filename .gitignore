@@ -1,0 +1,7 @@
+node_modules/
+com.nickustinov.itsyhome.sdPlugin/bin/
+com.nickustinov.itsyhome.sdPlugin/logs/
+*.js.map
+dist/
+docs/
+.DS_Store

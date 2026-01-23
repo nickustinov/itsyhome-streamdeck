@@ -1,0 +1,159 @@
+{
+  "$schema": "https://schemas.elgato.com/streamdeck/plugins/manifest.json",
+  "Name": "Itsyhome",
+  "Version": "1.0.0.0",
+  "Author": "Nick Ustinov",
+  "Description": "Control your HomeKit devices from Stream Deck via Itsyhome",
+  "Category": "Itsyhome",
+  "CategoryIcon": "imgs/plugin/category-icon",
+  "Icon": "imgs/plugin/marketplace",
+  "CodePath": "bin/plugin.js",
+  "SDKVersion": 2,
+  "Software": {
+    "MinimumVersion": "6.5"
+  },
+  "OS": [
+    {
+      "Platform": "mac",
+      "MinimumVersion": "14.0"
+    }
+  ],
+  "Nodejs": {
+    "Version": "20",
+    "Debug": "enabled"
+  },
+  "UUID": "com.nickustinov.itsyhome",
+  "Actions": [
+    {
+      "Name": "Toggle device",
+      "UUID": "com.nickustinov.itsyhome.toggle",
+      "Icon": "imgs/actions/toggle/icon",
+      "Tooltip": "Toggle a HomeKit device on or off",
+      "PropertyInspectorPath": "ui/toggle.html",
+      "Controllers": ["Keypad"],
+      "States": [
+        {
+          "Image": "imgs/actions/toggle/key-off",
+          "Name": "Off"
+        },
+        {
+          "Image": "imgs/actions/toggle/key-on",
+          "Name": "On"
+        }
+      ]
+    },
+    {
+      "Name": "Execute scene",
+      "UUID": "com.nickustinov.itsyhome.scene",
+      "Icon": "imgs/actions/scene/icon",
+      "Tooltip": "Execute a HomeKit scene",
+      "PropertyInspectorPath": "ui/scene.html",
+      "Controllers": ["Keypad"],
+      "States": [
+        {
+          "Image": "imgs/actions/scene/key",
+          "TitleAlignment": "bottom"
+        }
+      ]
+    },
+    {
+      "Name": "Set brightness",
+      "UUID": "com.nickustinov.itsyhome.brightness",
+      "Icon": "imgs/actions/brightness/icon",
+      "Tooltip": "Set a device to a specific brightness level",
+      "PropertyInspectorPath": "ui/brightness.html",
+      "Controllers": ["Keypad"],
+      "DisableAutomaticStates": true,
+      "States": [
+        {
+          "Image": "imgs/actions/brightness/key",
+          "TitleAlignment": "bottom"
+        }
+      ]
+    },
+    {
+      "Name": "Lock",
+      "UUID": "com.nickustinov.itsyhome.lock",
+      "Icon": "imgs/actions/lock/icon",
+      "Tooltip": "Toggle a lock between locked and unlocked",
+      "PropertyInspectorPath": "ui/lock.html",
+      "Controllers": ["Keypad"],
+      "States": [
+        {
+          "Image": "imgs/actions/lock/key-off",
+          "Name": "Unlocked"
+        },
+        {
+          "Image": "imgs/actions/lock/key-on",
+          "Name": "Locked"
+        }
+      ]
+    },
+    {
+      "Name": "AC",
+      "UUID": "com.nickustinov.itsyhome.thermostat",
+      "Icon": "imgs/actions/thermostat/icon",
+      "Tooltip": "Toggle AC or thermostat on/off",
+      "PropertyInspectorPath": "ui/thermostat.html",
+      "Controllers": ["Keypad"],
+      "States": [
+        {
+          "Image": "imgs/actions/thermostat/key-off",
+          "Name": "Off"
+        },
+        {
+          "Image": "imgs/actions/thermostat/key-on",
+          "Name": "On"
+        }
+      ]
+    },
+    {
+      "Name": "Status",
+      "UUID": "com.nickustinov.itsyhome.status",
+      "Icon": "imgs/actions/status/icon",
+      "Tooltip": "Display temperature or humidity sensor readings",
+      "PropertyInspectorPath": "ui/status.html",
+      "Controllers": ["Keypad"],
+      "DisableAutomaticStates": true,
+      "States": [
+        {
+          "Image": "imgs/actions/status/key",
+          "TitleAlignment": "bottom"
+        }
+      ]
+    },
+    {
+      "Name": "Blinds",
+      "UUID": "com.nickustinov.itsyhome.blinds",
+      "Icon": "imgs/actions/blinds/icon",
+      "Tooltip": "Open or close blinds",
+      "PropertyInspectorPath": "ui/blinds.html",
+      "Controllers": ["Keypad"],
+      "DisableAutomaticStates": true,
+      "States": [
+        {
+          "Image": "imgs/actions/blinds/key",
+          "TitleAlignment": "bottom"
+        }
+      ]
+    },
+    {
+      "Name": "Garage door",
+      "UUID": "com.nickustinov.itsyhome.garage-door",
+      "Icon": "imgs/actions/garage-door/icon",
+      "Tooltip": "Open or close a garage door",
+      "PropertyInspectorPath": "ui/garage-door.html",
+      "Controllers": ["Keypad"],
+      "States": [
+        {
+          "Image": "imgs/actions/garage-door/key-off",
+          "Name": "Closed"
+        },
+        {
+          "Image": "imgs/actions/garage-door/key-on",
+          "Name": "Open"
+        }
+      ]
+    }
+  ]
+}

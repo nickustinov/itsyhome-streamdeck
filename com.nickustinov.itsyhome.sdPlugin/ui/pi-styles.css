@@ -1,0 +1,103 @@
+:root {
+  --sd-bg: #2d2d2d;
+  --sd-bg-secondary: #3b3b3b;
+  --sd-text: #d8d8d8;
+  --sd-text-muted: #999;
+  --sd-accent: #0078d4;
+  --sd-border: #4a4a4a;
+  --sd-error: #d14;
+  --sd-radius: 4px;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background-color: var(--sd-bg);
+  color: var(--sd-text);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-size: 12px;
+  padding: 12px;
+}
+
+.sdpi-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.sdpi-item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.sdpi-item-label {
+  color: var(--sd-text-muted);
+  font-size: 11px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+select,
+input[type="number"],
+input[type="text"] {
+  background-color: var(--sd-bg-secondary);
+  border: 1px solid var(--sd-border);
+  border-radius: var(--sd-radius);
+  color: var(--sd-text);
+  font-size: 12px;
+  padding: 6px 8px;
+  width: 100%;
+  outline: none;
+}
+
+select:focus,
+input:focus {
+  border-color: var(--sd-accent);
+}
+
+select optgroup {
+  color: var(--sd-text-muted);
+  font-weight: 600;
+}
+
+select option {
+  color: var(--sd-text);
+  font-weight: normal;
+}
+
+.connection-error {
+  background-color: rgba(209, 17, 65, 0.15);
+  border: 1px solid var(--sd-error);
+  border-radius: var(--sd-radius);
+  color: var(--sd-error);
+  display: none;
+  font-size: 11px;
+  padding: 8px;
+}
+
+.sdpi-info {
+  color: var(--sd-text-muted);
+  font-size: 11px;
+  line-height: 1.4;
+}
+
+button.refresh-btn {
+  background-color: var(--sd-bg-secondary);
+  border: 1px solid var(--sd-border);
+  border-radius: var(--sd-radius);
+  color: var(--sd-text);
+  cursor: pointer;
+  font-size: 11px;
+  padding: 4px 10px;
+  align-self: flex-start;
+}
+
+button.refresh-btn:hover {
+  border-color: var(--sd-accent);
+}
