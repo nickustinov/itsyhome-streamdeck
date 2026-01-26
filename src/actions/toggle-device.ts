@@ -142,7 +142,8 @@ export class ToggleDeviceAction extends SingletonAction<ToggleSettings> {
     if (iconStyle) {
       icon = `imgs/device-types/${iconStyle}-${state}.png`;
     } else {
-      const isGroup = target.startsWith("group.");
+      // Groups can be "group.Name" (global) or "Room/group.Name" (room-scoped)
+      const isGroup = target.startsWith("group.") || target.includes("/group.");
       icon = isGroup ? getGroupIcon(isOn) : getDeviceIcon(deviceType, isOn);
     }
 

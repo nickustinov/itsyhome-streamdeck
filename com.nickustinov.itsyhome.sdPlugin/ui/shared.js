@@ -53,8 +53,10 @@ async function populateTargetSelect(selectElement, port, currentValue, options) 
       groupOptgroup.label = "Groups";
       for (const group of groups) {
         const option = document.createElement("option");
-        option.value = `group.${group.name}`;
-        option.textContent = `${group.icon} ${group.name} (${group.devices} devices)`;
+        // Room-scoped groups use "Room/group.Name" format, global groups use "group.Name"
+        option.value = group.room ? `${group.room}/group.${group.name}` : `group.${group.name}`;
+        const roomLabel = group.room ? ` (${group.room})` : " (global)";
+        option.textContent = `${group.icon} ${group.name}${roomLabel} — ${group.devices} devices`;
         if (currentValue === option.value) option.selected = true;
         groupOptgroup.appendChild(option);
       }

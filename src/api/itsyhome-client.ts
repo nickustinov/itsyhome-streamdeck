@@ -37,6 +37,7 @@ export type GroupInfo = {
   name: string;
   icon: string;
   devices: number;
+  room?: string;
 };
 
 export type ListDevice = {
