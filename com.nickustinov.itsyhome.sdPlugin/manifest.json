@@ -43,7 +43,7 @@
       ]
     },
     {
-      "Name": "Execute scene",
+      "Name": "Scene",
       "UUID": "com.nickustinov.itsyhome.scene",
       "Icon": "imgs/actions/scene/icon",
       "Tooltip": "Execute a HomeKit scene",
@@ -110,7 +110,7 @@
       ]
     },
     {
-      "Name": "Status",
+      "Name": "Temperature/Humidity",
       "UUID": "com.nickustinov.itsyhome.status",
       "Icon": "imgs/actions/status/icon",
       "Tooltip": "Display temperature or humidity sensor readings",

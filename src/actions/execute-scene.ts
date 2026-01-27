@@ -13,6 +13,7 @@ const DEFAULT_COLOR = "#ff9500"; // Orange
 type SceneSettings = {
   scene: string;
   port: number;
+  label?: string;
   color?: string;
 };
 
@@ -29,10 +30,10 @@ export class ExecuteSceneAction extends SingletonAction<SceneSettings> {
 
     if (scene) {
       await this.updateSceneIcon(ev.action, scene, ev.payload.settings);
-      await ev.action.setTitle(scene);
     } else {
       await this.setDefaultIcon(ev.action, ev.payload.settings);
     }
+    await ev.action.setTitle(ev.payload.settings.label || scene || "");
   }
 
   override async onDidReceiveSettings(ev: DidReceiveSettingsEvent<SceneSettings>): Promise<void> {
@@ -44,10 +45,10 @@ export class ExecuteSceneAction extends SingletonAction<SceneSettings> {
 
     if (scene) {
       await this.updateSceneIcon(ev.action, scene, ev.payload.settings);
-      await ev.action.setTitle(scene);
     } else {
       await this.setDefaultIcon(ev.action, ev.payload.settings);
     }
+    await ev.action.setTitle(ev.payload.settings.label || scene || "");
   }
 
   private async setDefaultIcon(

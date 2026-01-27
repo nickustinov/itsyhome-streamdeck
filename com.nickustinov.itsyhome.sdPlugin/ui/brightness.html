@@ -18,13 +18,6 @@
     </div>
 
     <div class="sdpi-item">
-      <div class="sdpi-item-label">Show brightness</div>
-      <div class="sdpi-item-value">
-        <input type="checkbox" id="showBrightness" checked />
-      </div>
-    </div>
-
-    <div class="sdpi-item">
       <label class="sdpi-item-label">Target brightness</label>
       <input type="number" id="targetBrightness" placeholder="Auto" min="0" max="100" />
     </div>
@@ -62,7 +55,6 @@
   <script>
     const targetSelect = document.getElementById("target");
     const labelInput = document.getElementById("label");
-    const showBrightnessCheckbox = document.getElementById("showBrightness");
     const targetBrightnessInput = document.getElementById("targetBrightness");
     const portInput = document.getElementById("port");
     const refreshBtn = document.getElementById("refresh");
@@ -74,7 +66,6 @@
     function onSettingsLoaded(settings) {
       portInput.value = settings.port || "";
       labelInput.value = settings.label || "";
-      showBrightnessCheckbox.checked = settings.showBrightness !== false; // default true
       targetBrightnessInput.value = settings.targetBrightness ?? "";
       hideConnectionError();
       populateTargetSelect(targetSelect, settings.port, settings.target, { types: ["light"], showGroups: false });
@@ -83,15 +74,24 @@
     }
 
     targetSelect.addEventListener("change", () => {
-      saveSettings({ target: targetSelect.value });
+      const target = targetSelect.value;
+      saveSettings({ target });
+
+      // Auto-populate label with device name
+      if (target) {
+        const device = cachedDevices.find(d => {
+          const deviceTarget = d.room ? `${d.room}/${d.name}` : d.name;
+          return deviceTarget === target;
+        });
+        if (device) {
+          labelInput.value = device.name;
+          saveSettings({ label: device.name });
+        }
+      }
     });
 
     labelInput.addEventListener("change", () => {
       saveSettings({ label: labelInput.value });
-    });
-
-    showBrightnessCheckbox.addEventListener("change", () => {
-      saveSettings({ showBrightness: showBrightnessCheckbox.checked });
     });
 
     targetBrightnessInput.addEventListener("change", () => {

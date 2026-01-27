@@ -68,9 +68,10 @@ export class BlindsAction extends SingletonAction<BlindsSettings> {
   }
 
   override async onKeyDown(ev: KeyDownEvent<BlindsSettings>): Promise<void> {
-    const { target, direction } = ev.payload.settings;
+    const { target } = ev.payload.settings;
+    const direction = ev.payload.settings.direction || "open";
 
-    if (!target || !direction) {
+    if (!target) {
       await ev.action.showAlert();
       return;
     }

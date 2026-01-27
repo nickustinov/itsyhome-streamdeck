@@ -13,7 +13,17 @@
     </div>
 
     <div class="sdpi-item">
+      <label class="sdpi-item-label">Label</label>
+      <input type="text" id="label" placeholder="e.g. Good night" />
+    </div>
+
+    <div class="sdpi-item">
       <button class="refresh-btn" id="refresh">Refresh scenes</button>
+    </div>
+
+    <div class="sdpi-item">
+      <label class="sdpi-item-label">Color</label>
+      <div id="colorPicker"></div>
     </div>
 
     <div class="sdpi-item">
@@ -34,17 +44,34 @@
   <script src="shared.js"></script>
   <script>
     const sceneSelect = document.getElementById("scene");
+    const labelInput = document.getElementById("label");
     const portInput = document.getElementById("port");
     const refreshBtn = document.getElementById("refresh");
 
+    // Initialize color picker
+    const colorPicker = initColorPicker("colorPicker", "color", "#ff9500", saveSettings, getSettings);
+
     function onSettingsLoaded(settings) {
       portInput.value = settings.port || "";
+      labelInput.value = settings.label || "";
       hideConnectionError();
       populateSceneSelect(sceneSelect, settings.port, settings.scene);
+      colorPicker.setInitialValue();
     }
 
     sceneSelect.addEventListener("change", () => {
-      saveSettings({ scene: sceneSelect.value });
+      const scene = sceneSelect.value;
+      saveSettings({ scene });
+
+      // Auto-populate label with scene name
+      if (scene) {
+        labelInput.value = scene;
+        saveSettings({ label: scene });
+      }
+    });
+
+    labelInput.addEventListener("change", () => {
+      saveSettings({ label: labelInput.value });
     });
 
     portInput.addEventListener("change", () => {

@@ -17,7 +17,6 @@ type LightSettings = {
   target: string;
   port: number;
   label?: string;
-  showBrightness?: boolean;
   targetBrightness?: number;
   offColor?: string;
   onColor?: string;
@@ -118,8 +117,7 @@ export class LightAction extends SingletonAction<LightSettings> {
         this.lightCache.set(target, { ...cached, isOn: newIsOn, brightness: newBrightness });
 
         // Build title for optimistic update
-        const showBrightness = ev.payload.settings.showBrightness !== false;
-        const brightnessStr = showBrightness && newIsOn && newBrightness != null ? `${Math.round(newBrightness)}%` : "";
+        const brightnessStr = newIsOn && newBrightness != null ? `${Math.round(newBrightness)}%` : "";
         const label = ev.payload.settings.label;
         const title = label && brightnessStr ? `${label}\n${brightnessStr}` : label || brightnessStr;
 
@@ -166,9 +164,8 @@ export class LightAction extends SingletonAction<LightSettings> {
 
       this.lightCache.set(target, { isOn, icon, brightness });
 
-      // Build title: label + brightness (same pattern as thermostat)
-      const showBrightness = settings.showBrightness !== false; // default true
-      const brightnessStr = showBrightness && isOn && brightness != null ? `${Math.round(brightness)}%` : "";
+      // Build title: label + brightness
+      const brightnessStr = isOn && brightness != null ? `${Math.round(brightness)}%` : "";
       const label = settings.label;
       const title = label && brightnessStr ? `${label}\n${brightnessStr}` : label || brightnessStr;
 

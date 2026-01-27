@@ -22,6 +22,16 @@
     </div>
 
     <div class="sdpi-item">
+      <label class="sdpi-item-label">Locked color</label>
+      <div id="lockedColorPicker"></div>
+    </div>
+
+    <div class="sdpi-item">
+      <label class="sdpi-item-label">Unlocked color</label>
+      <div id="unlockedColorPicker"></div>
+    </div>
+
+    <div class="sdpi-item">
       <label class="sdpi-item-label">Port</label>
       <input type="number" id="port" placeholder="8423" min="1" max="65535" />
     </div>
@@ -43,19 +53,25 @@
     const portInput = document.getElementById("port");
     const refreshBtn = document.getElementById("refresh");
 
+    // Initialize color pickers
+    const lockedColorPicker = initColorPicker("lockedColorPicker", "lockedColor", "#30d158", saveSettings, getSettings);
+    const unlockedColorPicker = initColorPicker("unlockedColorPicker", "unlockedColor", "#ff9500", saveSettings, getSettings);
+
     function onSettingsLoaded(settings) {
       portInput.value = settings.port || "";
       labelInput.value = settings.label || "";
       hideConnectionError();
       populateTargetSelect(targetSelect, settings.port, settings.target, { types: ["lock"], showGroups: false });
+      lockedColorPicker.setInitialValue();
+      unlockedColorPicker.setInitialValue();
     }
 
     targetSelect.addEventListener("change", () => {
       const target = targetSelect.value;
       saveSettings({ target });
 
-      // Auto-populate label with device name if label is empty
-      if (target && !labelInput.value) {
+      // Auto-populate label with device name
+      if (target) {
         const device = cachedDevices.find(d => {
           const deviceTarget = d.room ? `${d.room}/${d.name}` : d.name;
           return deviceTarget === target;

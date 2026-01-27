@@ -53,7 +53,7 @@ describe("ExecuteSceneAction", () => {
       expect(ev.action.setTitle).toHaveBeenCalledWith("Good Morning");
     });
 
-    it("does not set title when scene is empty", async () => {
+    it("sets empty title when scene is empty", async () => {
       const ev = {
         action: createMockAction(),
         payload: { settings: { scene: "", port: 0 } },
@@ -61,7 +61,7 @@ describe("ExecuteSceneAction", () => {
 
       await action.onWillAppear(ev as any);
 
-      expect(ev.action.setTitle).not.toHaveBeenCalled();
+      expect(ev.action.setTitle).toHaveBeenCalledWith("");
     });
 
     it("uses custom port", async () => {
@@ -100,7 +100,7 @@ describe("ExecuteSceneAction", () => {
       expect(ItsyhomeClient).toHaveBeenCalledWith(undefined, 5555);
     });
 
-    it("does not set title when scene is empty", async () => {
+    it("sets empty title when scene is empty", async () => {
       const ev = {
         action: createMockAction(),
         payload: { settings: { scene: "", port: 0 } },
@@ -108,7 +108,7 @@ describe("ExecuteSceneAction", () => {
 
       await action.onDidReceiveSettings(ev as any);
 
-      expect(ev.action.setTitle).not.toHaveBeenCalled();
+      expect(ev.action.setTitle).toHaveBeenCalledWith("");
     });
   });
 

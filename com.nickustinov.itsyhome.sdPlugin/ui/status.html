@@ -22,6 +22,11 @@
     </div>
 
     <div class="sdpi-item">
+      <label class="sdpi-item-label">Color</label>
+      <div id="colorPicker"></div>
+    </div>
+
+    <div class="sdpi-item">
       <label class="sdpi-item-label">Port</label>
       <input type="number" id="port" placeholder="8423" min="1" max="65535" />
     </div>
@@ -43,15 +48,32 @@
     const portInput = document.getElementById("port");
     const refreshBtn = document.getElementById("refresh");
 
+    // Initialize color picker (default uses red for temp, blue for humidity - set in TypeScript)
+    const colorPicker = initColorPicker("colorPicker", "color", "#ff3b30", saveSettings, getSettings);
+
     function onSettingsLoaded(settings) {
       portInput.value = settings.port || "";
       labelInput.value = settings.label || "";
       hideConnectionError();
       populateTargetSelect(targetSelect, settings.port, settings.target, { types: ["temperature-sensor", "humidity-sensor"], showGroups: false });
+      colorPicker.setInitialValue();
     }
 
     targetSelect.addEventListener("change", () => {
-      saveSettings({ target: targetSelect.value });
+      const target = targetSelect.value;
+      saveSettings({ target });
+
+      // Auto-populate label with device name
+      if (target) {
+        const device = cachedDevices.find(d => {
+          const deviceTarget = d.room ? `${d.room}/${d.name}` : d.name;
+          return deviceTarget === target;
+        });
+        if (device) {
+          labelInput.value = device.name;
+          saveSettings({ label: device.name });
+        }
+      }
     });
 
     labelInput.addEventListener("change", () => {

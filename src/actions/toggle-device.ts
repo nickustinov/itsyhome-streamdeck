@@ -31,6 +31,7 @@ const DEVICE_TYPE_FALLBACK: Record<string, string> = {
 type ToggleSettings = {
   target: string;
   port: number;
+  label?: string;
   offColor?: string;
   onColor?: string;
 };
@@ -109,6 +110,7 @@ export class ToggleDeviceAction extends SingletonAction<ToggleSettings> {
         const newIsOn = !cached.isOn;
         this.deviceCache.set(target, { ...cached, isOn: newIsOn });
         await this.applyVisualState(ev.action as KeyAction<ToggleSettings>, target, cached.type, newIsOn, cached.icon, ev.payload.settings);
+        await ev.action.setTitle(ev.payload.settings.label || "");
       }
     } catch (err) {
       streamDeck.logger.error(`Toggle error: ${err}`);
@@ -150,6 +152,7 @@ export class ToggleDeviceAction extends SingletonAction<ToggleSettings> {
 
       this.deviceCache.set(target, { type: device.type, isOn, icon });
       await this.applyVisualState(action, target, device.type, isOn, icon, settings);
+      await action.setTitle(settings.label || "");
     } catch {
       // Server might not be running — silently ignore
     }

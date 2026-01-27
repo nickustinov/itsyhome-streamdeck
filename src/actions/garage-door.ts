@@ -10,12 +10,13 @@ import streamDeck, {
 import { ItsyhomeClient, type DeviceState } from "../api/itsyhome-client";
 import { renderIcon } from "../icon-renderer";
 
-const DEFAULT_CLOSED_COLOR = "#8e8e93"; // Gray
-const DEFAULT_OPEN_COLOR = "#ff9500"; // Orange
+const DEFAULT_CLOSED_COLOR = "#30d158"; // Green - secure
+const DEFAULT_OPEN_COLOR = "#ff9500"; // Orange - attention
 
 type GarageDoorSettings = {
   target: string;
   port: number;
+  label?: string;
   closedColor?: string;
   openColor?: string;
 };
@@ -97,6 +98,7 @@ export class GarageDoorAction extends SingletonAction<GarageDoorSettings> {
       this.doorCache.set(target, { ...cached, doorState: newState });
       this.optimisticUntil.set(target, Date.now() + 30000);
       await this.applyVisualState(ev.action as KeyAction<GarageDoorSettings>, newState, cached?.icon, ev.payload.settings);
+      await ev.action.setTitle(ev.payload.settings.label || "");
     } catch (err) {
       streamDeck.logger.error(`Garage door toggle error: ${err}`);
       await ev.action.showAlert();
@@ -139,6 +141,7 @@ export class GarageDoorAction extends SingletonAction<GarageDoorSettings> {
       const icon = device.icon;
       this.doorCache.set(target, { doorState, icon });
       await this.applyVisualState(action, doorState, icon, settings);
+      await action.setTitle(settings.label || "");
     } catch {
       // Server might not be running
     }

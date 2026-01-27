@@ -218,22 +218,7 @@ describe("LightAction", () => {
       expect(ev.action.setTitle).toHaveBeenCalledWith("Desk");
     });
 
-    it("hides brightness when showBrightness is false", async () => {
-      mockClient.getDeviceInfo.mockResolvedValue({
-        name: "Lamp", type: "light", reachable: true, state: { on: true, brightness: 75 },
-      });
-
-      const ev = {
-        action: createMockAction(),
-        payload: { settings: { target: "Lamp", port: 0, label: "Office", showBrightness: false } },
-      };
-
-      await action.onWillAppear(ev as any);
-
-      expect(ev.action.setTitle).toHaveBeenCalledWith("Office");
-    });
-
-    it("shows brightness by default when showBrightness is undefined", async () => {
+    it("shows brightness when light is on", async () => {
       mockClient.getDeviceInfo.mockResolvedValue({
         name: "Lamp", type: "light", reachable: true, state: { on: true, brightness: 60 },
       });

@@ -13,6 +13,11 @@
     </div>
 
     <div class="sdpi-item">
+      <label class="sdpi-item-label">Label</label>
+      <input type="text" id="label" placeholder="e.g. Kitchen" />
+    </div>
+
+    <div class="sdpi-item">
       <button class="refresh-btn" id="refresh">Refresh devices</button>
     </div>
 
@@ -44,6 +49,7 @@
   <script src="shared.js"></script>
   <script>
     const targetSelect = document.getElementById("target");
+    const labelInput = document.getElementById("label");
     const portInput = document.getElementById("port");
     const refreshBtn = document.getElementById("refresh");
 
@@ -56,6 +62,7 @@
 
     function onSettingsLoaded(settings) {
       portInput.value = settings.port || "";
+      labelInput.value = settings.label || "";
       hideConnectionError();
       populateTargetSelect(targetSelect, settings.port, settings.target, { types: TOGGLE_TYPES });
       offColorPicker.setInitialValue();
@@ -63,7 +70,24 @@
     }
 
     targetSelect.addEventListener("change", () => {
-      saveSettings({ target: targetSelect.value });
+      const target = targetSelect.value;
+      saveSettings({ target });
+
+      // Auto-populate label with device name
+      if (target) {
+        const device = cachedDevices.find(d => {
+          const deviceTarget = d.room ? `${d.room}/${d.name}` : d.name;
+          return deviceTarget === target;
+        });
+        if (device) {
+          labelInput.value = device.name;
+          saveSettings({ label: device.name });
+        }
+      }
+    });
+
+    labelInput.addEventListener("change", () => {
+      saveSettings({ label: labelInput.value });
     });
 
     portInput.addEventListener("change", () => {

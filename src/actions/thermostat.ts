@@ -11,7 +11,13 @@ import { ItsyhomeClient, type DeviceState } from "../api/itsyhome-client";
 import { renderIcon } from "../icon-renderer";
 
 const DEFAULT_OFF_COLOR = "#8e8e93"; // Gray
-const DEFAULT_ON_COLOR = "#ff9500"; // Orange
+
+// Mode-specific colors when ON
+const MODE_COLORS: Record<string, string> = {
+  heat: "#ff9500", // Orange
+  cool: "#007aff", // Blue
+  auto: "#30d158", // Green
+};
 
 type ThermostatSettings = {
   target: string;
@@ -19,7 +25,6 @@ type ThermostatSettings = {
   label: string;
   display: "current-target" | "current" | "target";
   offColor?: string;
-  onColor?: string;
 };
 
 type ThermostatCache = {
@@ -96,6 +101,7 @@ export class ThermostatAction extends SingletonAction<ThermostatSettings> {
         await this.applyVisualState(
           ev.action as KeyAction<ThermostatSettings>,
           newIsOn,
+          cached.mode,
           cached.icon,
           ev.payload.settings,
         );
@@ -157,7 +163,7 @@ export class ThermostatAction extends SingletonAction<ThermostatSettings> {
       const label = settings.label;
       const title = label && tempStr ? `${label}\n${tempStr}` : label || tempStr;
 
-      await this.applyVisualState(action, isOn, icon, settings);
+      await this.applyVisualState(action, isOn, mode, icon, settings);
       await action.setTitle(title);
     } catch {
       // Server might not be running
@@ -167,12 +173,19 @@ export class ThermostatAction extends SingletonAction<ThermostatSettings> {
   private async applyVisualState(
     action: KeyAction<ThermostatSettings>,
     isOn: boolean,
+    mode?: string,
     apiIcon?: string,
     settings?: ThermostatSettings,
   ): Promise<void> {
-    const iconName = apiIcon ?? "thermometer";
+    // When off: use device icon; when on: use mode-specific icon
+    const modeIcons: Record<string, string> = {
+      heat: "fire",
+      cool: "snowflake",
+      auto: "arrows-left-right",
+    };
+    const iconName = isOn && mode ? (modeIcons[mode] ?? apiIcon ?? "thermometer") : (apiIcon ?? "thermometer");
     const color = isOn
-      ? (settings?.onColor || DEFAULT_ON_COLOR)
+      ? (mode ? MODE_COLORS[mode] : MODE_COLORS.auto) || MODE_COLORS.auto
       : (settings?.offColor || DEFAULT_OFF_COLOR);
     const icon = await renderIcon(iconName, color, isOn);
     await action.setImage(icon);

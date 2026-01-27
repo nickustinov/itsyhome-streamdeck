@@ -8,7 +8,8 @@ import {
 import { ItsyhomeClient, type DeviceState } from "../api/itsyhome-client";
 import { renderIcon } from "../icon-renderer";
 
-const DEFAULT_COLOR = "#8e8e93"; // Gray
+const DEFAULT_TEMPERATURE_COLOR = "#ff3b30"; // Red
+const DEFAULT_HUMIDITY_COLOR = "#007aff"; // Blue
 
 const DEVICE_TYPE_FALLBACK: Record<string, string> = {
   "temperature-sensor": "thermometer-simple",
@@ -107,7 +108,8 @@ export class StatusAction extends SingletonAction<StatusSettings> {
       const title = label && value ? `${label}\n${value}` : label || value;
 
       const iconName = device.icon ?? DEVICE_TYPE_FALLBACK[device.type] ?? "info";
-      const color = settings.color || DEFAULT_COLOR;
+      const defaultColor = device.type === "humidity-sensor" ? DEFAULT_HUMIDITY_COLOR : DEFAULT_TEMPERATURE_COLOR;
+      const color = settings.color || defaultColor;
       const icon = await renderIcon(iconName, color, true);
       await action.setImage(icon);
       await action.setTitle(title);
