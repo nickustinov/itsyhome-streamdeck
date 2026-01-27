@@ -16,6 +16,7 @@ const DEFAULT_UNLOCKED_COLOR = "#ff9500"; // Orange - attention
 type LockSettings = {
   target: string;
   port: number;
+  label?: string;
   lockedColor?: string;
   unlockedColor?: string;
 };
@@ -92,6 +93,7 @@ export class LockAction extends SingletonAction<LockSettings> {
       this.lockCache.set(target, { ...cached, isLocked: nowLocked });
       this.optimisticUntil.set(target, Date.now() + 30000);
       await this.applyVisualState(ev.action as KeyAction<LockSettings>, nowLocked, cached?.icon, ev.payload.settings);
+      await ev.action.setTitle(ev.payload.settings.label || "");
     } catch (err) {
       streamDeck.logger.error(`Lock toggle error: ${err}`);
       await ev.action.showAlert();
@@ -134,6 +136,7 @@ export class LockAction extends SingletonAction<LockSettings> {
       const icon = device.icon;
       this.lockCache.set(target, { isLocked, icon });
       await this.applyVisualState(action, isLocked, icon, settings);
+      await action.setTitle(settings.label || "");
     } catch {
       // Server might not be running
     }
