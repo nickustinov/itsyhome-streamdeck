@@ -12,9 +12,10 @@ vi.mock("../../src/api/itsyhome-client", () => ({
 }));
 
 vi.mock("../../src/icon-renderer", () => ({
-  renderIcon: vi.fn((iconName: string, color: string, useFill: boolean) => {
+  renderIcon: vi.fn((iconName: string, color: string, useFill: boolean, text?: string) => {
     const state = useFill ? "on" : "off";
-    return Promise.resolve(`data:image/png;base64,mock-${iconName}-${state}`);
+    const textPart = text ? `-${text}` : "";
+    return Promise.resolve(`data:image/png;base64,mock-${iconName}-${state}${textPart}`);
   }),
 }));
 
@@ -138,7 +139,7 @@ describe("LightAction", () => {
       expect(ev.action.setImage).not.toHaveBeenCalled();
     });
 
-    it("infers on state from brightness when on is undefined", async () => {
+    it("infers on state from brightness when on is undefined and shows brightness", async () => {
       mockClient.getDeviceInfo.mockResolvedValue({
         name: "Lamp", type: "light", reachable: true, state: { brightness: 50 },
       });
@@ -151,6 +152,37 @@ describe("LightAction", () => {
       await action.onWillAppear(ev as any);
 
       expect(ev.action.setState).toHaveBeenCalledWith(1);
+      expect(ev.action.setImage).toHaveBeenCalledWith("data:image/png;base64,mock-lightbulb-on-50%");
+    });
+
+    it("displays brightness percentage on icon when light is on", async () => {
+      mockClient.getDeviceInfo.mockResolvedValue({
+        name: "Lamp", type: "light", reachable: true, state: { on: true, brightness: 75 },
+      });
+
+      const ev = {
+        action: createMockAction(),
+        payload: { settings: { target: "Lamp", port: 0 } },
+      };
+
+      await action.onWillAppear(ev as any);
+
+      expect(ev.action.setImage).toHaveBeenCalledWith("data:image/png;base64,mock-lightbulb-on-75%");
+    });
+
+    it("does not display brightness when light is off", async () => {
+      mockClient.getDeviceInfo.mockResolvedValue({
+        name: "Lamp", type: "light", reachable: true, state: { on: false, brightness: 0 },
+      });
+
+      const ev = {
+        action: createMockAction(),
+        payload: { settings: { target: "Lamp", port: 0 } },
+      };
+
+      await action.onWillAppear(ev as any);
+
+      expect(ev.action.setImage).toHaveBeenCalledWith("data:image/png;base64,mock-lightbulb-off");
     });
   });
 

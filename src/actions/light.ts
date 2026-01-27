@@ -25,6 +25,7 @@ const POLL_INTERVAL_MS = 3000;
 type LightCache = {
   isOn: boolean;
   icon?: string;
+  brightness?: number;
 };
 
 @action({ UUID: "com.nickustinov.itsyhome.brightness" })
@@ -90,7 +91,7 @@ export class LightAction extends SingletonAction<LightSettings> {
       if (cached) {
         const newIsOn = !cached.isOn;
         this.lightCache.set(target, { ...cached, isOn: newIsOn });
-        await this.applyVisualState(ev.action as KeyAction<LightSettings>, cached.icon, newIsOn, ev.payload.settings);
+        await this.applyVisualState(ev.action as KeyAction<LightSettings>, cached.icon, newIsOn, ev.payload.settings, cached.brightness);
       }
     } catch (err) {
       streamDeck.logger.error(`Light toggle error: ${err}`);
@@ -128,9 +129,10 @@ export class LightAction extends SingletonAction<LightSettings> {
       const state = device.state as DeviceState | undefined;
       const isOn = state?.on ?? (state?.brightness != null && state.brightness > 0);
       const icon = device.icon;
+      const brightness = state?.brightness;
 
-      this.lightCache.set(target, { isOn, icon });
-      await this.applyVisualState(action, icon, isOn, settings);
+      this.lightCache.set(target, { isOn, icon, brightness });
+      await this.applyVisualState(action, icon, isOn, settings, brightness);
     } catch {
       // Server might not be running — silently ignore
     }
@@ -141,6 +143,7 @@ export class LightAction extends SingletonAction<LightSettings> {
     apiIcon?: string,
     isOn?: boolean,
     settings?: LightSettings,
+    brightness?: number,
   ): Promise<void> {
     const iconName = apiIcon ?? "lightbulb";
     const on = isOn ?? false;
@@ -149,7 +152,10 @@ export class LightAction extends SingletonAction<LightSettings> {
       ? (settings?.onColor || DEFAULT_ON_COLOR)
       : (settings?.offColor || DEFAULT_OFF_COLOR);
 
-    const icon = await renderIcon(iconName, color, on);
+    // Show brightness percentage when light is on and brightness is available
+    const text = on && brightness != null ? `${Math.round(brightness)}%` : undefined;
+
+    const icon = await renderIcon(iconName, color, on, text);
 
     await action.setImage(icon);
     await action.setState(on ? 1 : 0);

@@ -25,10 +25,20 @@ function hexToRgb(hex: string): { r: number; g: number; b: number } {
 }
 
 /**
- * Create an SVG that wraps a PNG with a color tint filter.
+ * Create an SVG that wraps a PNG with a color tint filter and optional text overlay.
  */
-function createTintedSvg(pngBase64: string, color: string, size: number): string {
+function createTintedSvg(
+  pngBase64: string,
+  color: string,
+  size: number,
+  text?: string
+): string {
   const { r, g, b } = hexToRgb(color);
+
+  // Text overlay - centered, using system fonts that work in Stream Deck
+  const textElement = text
+    ? `<text x="${size / 2}" y="${size / 2}" font-family="Arial, Helvetica, sans-serif" font-size="36" font-weight="bold" fill="white" text-anchor="middle" dominant-baseline="middle" style="text-shadow: 0 0 4px rgba(0,0,0,0.8)">${text}</text>`
+    : "";
 
   // feColorMatrix multiplies each channel - white (1,1,1) becomes (r,g,b)
   return `<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}">
@@ -38,24 +48,27 @@ function createTintedSvg(pngBase64: string, color: string, size: number): string
     </filter>
   </defs>
   <image href="data:image/png;base64,${pngBase64}" width="${size}" height="${size}" filter="url(#tint)"/>
+  ${textElement}
 </svg>`;
 }
 
 /**
- * Render an icon with the specified color.
+ * Render an icon with the specified color and optional text overlay.
  * @param iconName - Phosphor icon name (e.g., "lightbulb")
  * @param color - Hex color (e.g., "#ff9500")
  * @param isOn - true = fill (solid) variant, false = regular (outline) variant
+ * @param text - Optional text to overlay on the icon
  * @returns SVG data URI for setImage()
  */
 export async function renderIcon(
   iconName: string,
   color: string,
-  isOn = false
+  isOn = false,
+  text?: string
 ): Promise<string> {
   // ON = fill (solid), OFF = regular (outline)
   const variant = isOn ? "fill" : "regular";
-  const cacheKey = `${iconName}:${variant}:${color}`;
+  const cacheKey = `${iconName}:${variant}:${color}:${text ?? ""}`;
 
   const cached = iconCache.get(cacheKey);
   if (cached) return cached;
@@ -67,7 +80,7 @@ export async function renderIcon(
     const pngBuffer = await readFile(pngPath);
     const pngBase64 = pngBuffer.toString("base64");
 
-    const svg = createTintedSvg(pngBase64, color, 144);
+    const svg = createTintedSvg(pngBase64, color, 144, text);
     const dataUri = `data:image/svg+xml,${encodeURIComponent(svg)}`;
 
     iconCache.set(cacheKey, dataUri);
@@ -75,7 +88,7 @@ export async function renderIcon(
   } catch {
     // Fallback to question mark icon
     if (iconName !== "question") {
-      return renderIcon("question", color, isOn);
+      return renderIcon("question", color, isOn, text);
     }
     // Ultimate fallback - empty transparent image
     return `data:image/svg+xml,${encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="144" height="144"/>')}`;
