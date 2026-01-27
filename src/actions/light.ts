@@ -16,6 +16,9 @@ const DEFAULT_ON_COLOR = "#ff9500"; // Orange
 type LightSettings = {
   target: string;
   port: number;
+  label?: string;
+  showBrightness?: boolean;
+  targetBrightness?: number;
   offColor?: string;
   onColor?: string;
 };
@@ -70,7 +73,7 @@ export class LightAction extends SingletonAction<LightSettings> {
   }
 
   override async onKeyDown(ev: KeyDownEvent<LightSettings>): Promise<void> {
-    const { target } = ev.payload.settings;
+    const { target, targetBrightness } = ev.payload.settings;
 
     if (!target) {
       await ev.action.showAlert();
@@ -80,21 +83,51 @@ export class LightAction extends SingletonAction<LightSettings> {
     const cached = this.lightCache.get(target);
 
     try {
-      const result = await this.client.toggle(target);
+      // If targetBrightness is set: turn on to that brightness, or turn off if already on
+      // If not set: just toggle
+      let result;
+      let newIsOn: boolean;
+      let newBrightness: number | undefined;
+
+      if (targetBrightness != null && cached) {
+        if (cached.isOn) {
+          // Light is on → turn off
+          result = await this.client.turnOff(target);
+          newIsOn = false;
+          newBrightness = 0;
+        } else {
+          // Light is off → turn on to target brightness
+          result = await this.client.setBrightness(target, targetBrightness);
+          newIsOn = true;
+          newBrightness = targetBrightness;
+        }
+      } else {
+        result = await this.client.toggle(target);
+        newIsOn = cached ? !cached.isOn : true;
+        newBrightness = cached?.brightness;
+      }
+
       if (result.status === "error") {
-        streamDeck.logger.error(`Light toggle failed: ${result.message}`);
+        streamDeck.logger.error(`Light action failed: ${result.message}`);
         await ev.action.showAlert();
         return;
       }
 
-      // Optimistic update: flip the cached state immediately
+      // Optimistic update
       if (cached) {
-        const newIsOn = !cached.isOn;
-        this.lightCache.set(target, { ...cached, isOn: newIsOn });
-        await this.applyVisualState(ev.action as KeyAction<LightSettings>, cached.icon, newIsOn, ev.payload.settings, cached.brightness);
+        this.lightCache.set(target, { ...cached, isOn: newIsOn, brightness: newBrightness });
+
+        // Build title for optimistic update
+        const showBrightness = ev.payload.settings.showBrightness !== false;
+        const brightnessStr = showBrightness && newIsOn && newBrightness != null ? `${Math.round(newBrightness)}%` : "";
+        const label = ev.payload.settings.label;
+        const title = label && brightnessStr ? `${label}\n${brightnessStr}` : label || brightnessStr;
+
+        await this.applyVisualState(ev.action as KeyAction<LightSettings>, cached.icon, newIsOn, ev.payload.settings);
+        await ev.action.setTitle(title);
       }
     } catch (err) {
-      streamDeck.logger.error(`Light toggle error: ${err}`);
+      streamDeck.logger.error(`Light action error: ${err}`);
       await ev.action.showAlert();
     }
   }
@@ -132,7 +165,15 @@ export class LightAction extends SingletonAction<LightSettings> {
       const brightness = state?.brightness;
 
       this.lightCache.set(target, { isOn, icon, brightness });
-      await this.applyVisualState(action, icon, isOn, settings, brightness);
+
+      // Build title: label + brightness (same pattern as thermostat)
+      const showBrightness = settings.showBrightness !== false; // default true
+      const brightnessStr = showBrightness && isOn && brightness != null ? `${Math.round(brightness)}%` : "";
+      const label = settings.label;
+      const title = label && brightnessStr ? `${label}\n${brightnessStr}` : label || brightnessStr;
+
+      await this.applyVisualState(action, icon, isOn, settings);
+      await action.setTitle(title);
     } catch {
       // Server might not be running — silently ignore
     }
@@ -143,7 +184,6 @@ export class LightAction extends SingletonAction<LightSettings> {
     apiIcon?: string,
     isOn?: boolean,
     settings?: LightSettings,
-    brightness?: number,
   ): Promise<void> {
     const iconName = apiIcon ?? "lightbulb";
     const on = isOn ?? false;
@@ -152,10 +192,7 @@ export class LightAction extends SingletonAction<LightSettings> {
       ? (settings?.onColor || DEFAULT_ON_COLOR)
       : (settings?.offColor || DEFAULT_OFF_COLOR);
 
-    // Show brightness percentage when light is on and brightness is available
-    const text = on && brightness != null ? `${Math.round(brightness)}%` : undefined;
-
-    const icon = await renderIcon(iconName, color, on, text);
+    const icon = await renderIcon(iconName, color, on);
 
     await action.setImage(icon);
     await action.setState(on ? 1 : 0);

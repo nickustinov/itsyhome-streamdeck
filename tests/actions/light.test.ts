@@ -139,7 +139,7 @@ describe("LightAction", () => {
       expect(ev.action.setImage).not.toHaveBeenCalled();
     });
 
-    it("infers on state from brightness when on is undefined and shows brightness", async () => {
+    it("infers on state from brightness when on is undefined and shows brightness in title", async () => {
       mockClient.getDeviceInfo.mockResolvedValue({
         name: "Lamp", type: "light", reachable: true, state: { brightness: 50 },
       });
@@ -152,10 +152,11 @@ describe("LightAction", () => {
       await action.onWillAppear(ev as any);
 
       expect(ev.action.setState).toHaveBeenCalledWith(1);
-      expect(ev.action.setImage).toHaveBeenCalledWith("data:image/png;base64,mock-lightbulb-on-50%");
+      expect(ev.action.setImage).toHaveBeenCalledWith("data:image/png;base64,mock-lightbulb-on");
+      expect(ev.action.setTitle).toHaveBeenCalledWith("50%");
     });
 
-    it("displays brightness percentage on icon when light is on", async () => {
+    it("displays brightness percentage in title when light is on", async () => {
       mockClient.getDeviceInfo.mockResolvedValue({
         name: "Lamp", type: "light", reachable: true, state: { on: true, brightness: 75 },
       });
@@ -167,10 +168,11 @@ describe("LightAction", () => {
 
       await action.onWillAppear(ev as any);
 
-      expect(ev.action.setImage).toHaveBeenCalledWith("data:image/png;base64,mock-lightbulb-on-75%");
+      expect(ev.action.setImage).toHaveBeenCalledWith("data:image/png;base64,mock-lightbulb-on");
+      expect(ev.action.setTitle).toHaveBeenCalledWith("75%");
     });
 
-    it("does not display brightness when light is off", async () => {
+    it("clears title when light is off and no label", async () => {
       mockClient.getDeviceInfo.mockResolvedValue({
         name: "Lamp", type: "light", reachable: true, state: { on: false, brightness: 0 },
       });
@@ -183,6 +185,67 @@ describe("LightAction", () => {
       await action.onWillAppear(ev as any);
 
       expect(ev.action.setImage).toHaveBeenCalledWith("data:image/png;base64,mock-lightbulb-off");
+      expect(ev.action.setTitle).toHaveBeenCalledWith("");
+    });
+
+    it("shows label with brightness when light is on", async () => {
+      mockClient.getDeviceInfo.mockResolvedValue({
+        name: "Lamp", type: "light", reachable: true, state: { on: true, brightness: 80 },
+      });
+
+      const ev = {
+        action: createMockAction(),
+        payload: { settings: { target: "Lamp", port: 0, label: "Office" } },
+      };
+
+      await action.onWillAppear(ev as any);
+
+      expect(ev.action.setTitle).toHaveBeenCalledWith("Office\n80%");
+    });
+
+    it("shows only label when light is off", async () => {
+      mockClient.getDeviceInfo.mockResolvedValue({
+        name: "Lamp", type: "light", reachable: true, state: { on: false },
+      });
+
+      const ev = {
+        action: createMockAction(),
+        payload: { settings: { target: "Lamp", port: 0, label: "Desk" } },
+      };
+
+      await action.onWillAppear(ev as any);
+
+      expect(ev.action.setTitle).toHaveBeenCalledWith("Desk");
+    });
+
+    it("hides brightness when showBrightness is false", async () => {
+      mockClient.getDeviceInfo.mockResolvedValue({
+        name: "Lamp", type: "light", reachable: true, state: { on: true, brightness: 75 },
+      });
+
+      const ev = {
+        action: createMockAction(),
+        payload: { settings: { target: "Lamp", port: 0, label: "Office", showBrightness: false } },
+      };
+
+      await action.onWillAppear(ev as any);
+
+      expect(ev.action.setTitle).toHaveBeenCalledWith("Office");
+    });
+
+    it("shows brightness by default when showBrightness is undefined", async () => {
+      mockClient.getDeviceInfo.mockResolvedValue({
+        name: "Lamp", type: "light", reachable: true, state: { on: true, brightness: 60 },
+      });
+
+      const ev = {
+        action: createMockAction(),
+        payload: { settings: { target: "Lamp", port: 0 } },
+      };
+
+      await action.onWillAppear(ev as any);
+
+      expect(ev.action.setTitle).toHaveBeenCalledWith("60%");
     });
   });
 

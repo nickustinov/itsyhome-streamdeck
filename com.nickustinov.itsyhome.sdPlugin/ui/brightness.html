@@ -13,6 +13,23 @@
     </div>
 
     <div class="sdpi-item">
+      <label class="sdpi-item-label">Label</label>
+      <input type="text" id="label" placeholder="e.g. Office" />
+    </div>
+
+    <div class="sdpi-item">
+      <div class="sdpi-item-label">Show brightness</div>
+      <div class="sdpi-item-value">
+        <input type="checkbox" id="showBrightness" checked />
+      </div>
+    </div>
+
+    <div class="sdpi-item">
+      <label class="sdpi-item-label">Target brightness</label>
+      <input type="number" id="targetBrightness" placeholder="Auto" min="0" max="100" />
+    </div>
+
+    <div class="sdpi-item">
       <button class="refresh-btn" id="refresh">Refresh devices</button>
     </div>
 
@@ -44,6 +61,9 @@
   <script src="shared.js"></script>
   <script>
     const targetSelect = document.getElementById("target");
+    const labelInput = document.getElementById("label");
+    const showBrightnessCheckbox = document.getElementById("showBrightness");
+    const targetBrightnessInput = document.getElementById("targetBrightness");
     const portInput = document.getElementById("port");
     const refreshBtn = document.getElementById("refresh");
 
@@ -53,6 +73,9 @@
 
     function onSettingsLoaded(settings) {
       portInput.value = settings.port || "";
+      labelInput.value = settings.label || "";
+      showBrightnessCheckbox.checked = settings.showBrightness !== false; // default true
+      targetBrightnessInput.value = settings.targetBrightness ?? "";
       hideConnectionError();
       populateTargetSelect(targetSelect, settings.port, settings.target, { types: ["light"], showGroups: false });
       offColorPicker.setInitialValue();
@@ -61,6 +84,19 @@
 
     targetSelect.addEventListener("change", () => {
       saveSettings({ target: targetSelect.value });
+    });
+
+    labelInput.addEventListener("change", () => {
+      saveSettings({ label: labelInput.value });
+    });
+
+    showBrightnessCheckbox.addEventListener("change", () => {
+      saveSettings({ showBrightness: showBrightnessCheckbox.checked });
+    });
+
+    targetBrightnessInput.addEventListener("change", () => {
+      const value = targetBrightnessInput.value ? parseInt(targetBrightnessInput.value, 10) : undefined;
+      saveSettings({ targetBrightness: value });
     });
 
     portInput.addEventListener("change", () => {

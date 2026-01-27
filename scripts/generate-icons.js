@@ -23,10 +23,10 @@ const OUTPUT_PATH = join(__dirname, "../com.nickustinov.itsyhome.sdPlugin/imgs/i
 
 const ICON_COLOR = "#ffffff"; // All icons white, tinted at runtime
 
-// Canvas sizes and icon sizes within them (centered)
+// Canvas sizes and icon sizes within them (moved up from center)
 const SIZES = [
-  { canvas: 72, icon: 36, suffix: "" },
-  { canvas: 144, icon: 72, suffix: "@2x" },
+  { canvas: 72, icon: 52, verticalOffset: -8, suffix: "" },
+  { canvas: 144, icon: 104, verticalOffset: -16, suffix: "@2x" },
 ];
 
 /**
@@ -57,18 +57,23 @@ async function processIcon(iconName, regularPath, fillPath) {
 
   const promises = [];
 
-  for (const { canvas, icon, suffix } of SIZES) {
-    const offset = Math.floor((canvas - icon) / 2);
+  for (const { canvas, icon, verticalOffset = 0, suffix } of SIZES) {
+    const hOffset = Math.floor((canvas - icon) / 2);
+    const vOffset = Math.floor((canvas - icon) / 2) + verticalOffset;
+    const top = Math.max(0, vOffset);
+    const bottom = Math.max(0, canvas - icon - vOffset);
+    const left = hOffset;
+    const right = canvas - icon - hOffset;
 
     // Regular (outline) variant
     promises.push(
       sharp(Buffer.from(regularWhite), { density: 300 })
         .resize(icon, icon)
         .extend({
-          top: offset,
-          bottom: canvas - icon - offset,
-          left: offset,
-          right: canvas - icon - offset,
+          top,
+          bottom,
+          left,
+          right,
           background: { r: 0, g: 0, b: 0, alpha: 0 },
         })
         .png({ compressionLevel: 9 })
@@ -80,10 +85,10 @@ async function processIcon(iconName, regularPath, fillPath) {
       sharp(Buffer.from(fillWhite), { density: 300 })
         .resize(icon, icon)
         .extend({
-          top: offset,
-          bottom: canvas - icon - offset,
-          left: offset,
-          right: canvas - icon - offset,
+          top,
+          bottom,
+          left,
+          right,
           background: { r: 0, g: 0, b: 0, alpha: 0 },
         })
         .png({ compressionLevel: 9 })
