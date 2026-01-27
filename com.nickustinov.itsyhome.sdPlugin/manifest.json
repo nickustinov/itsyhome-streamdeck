@@ -24,10 +24,10 @@
   "UUID": "com.nickustinov.itsyhome",
   "Actions": [
     {
-      "Name": "Toggle device",
+      "Name": "Switch/Outlet",
       "UUID": "com.nickustinov.itsyhome.toggle",
       "Icon": "imgs/actions/toggle/icon",
-      "Tooltip": "Toggle a HomeKit device on or off",
+      "Tooltip": "Toggle a switch or outlet on/off",
       "PropertyInspectorPath": "ui/toggle.html",
       "Controllers": ["Keypad"],
       "DisableAutomaticStates": true,
@@ -57,16 +57,16 @@
       ]
     },
     {
-      "Name": "Set brightness",
+      "Name": "Light",
       "UUID": "com.nickustinov.itsyhome.brightness",
       "Icon": "imgs/actions/brightness/icon",
-      "Tooltip": "Set a device to a specific brightness level",
+      "Tooltip": "Toggle a light on/off with optional brightness",
       "PropertyInspectorPath": "ui/brightness.html",
       "Controllers": ["Keypad"],
       "DisableAutomaticStates": true,
       "States": [
         {
-          "Image": "imgs/actions/brightness/key",
+          "Image": "imgs/actions/brightness/key-off",
           "TitleAlignment": "bottom"
         }
       ]

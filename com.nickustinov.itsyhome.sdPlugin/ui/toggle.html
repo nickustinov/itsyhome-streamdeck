@@ -2,7 +2,7 @@
 <html>
 <head>
   <meta charset="utf-8" />
-  <title>Toggle device</title>
+  <title>Switch/Outlet</title>
   <link rel="stylesheet" href="pi-styles.css" />
 </head>
 <body>
@@ -36,7 +36,7 @@
     </div>
 
     <div class="sdpi-info">
-      Select a device or group to toggle on/off. The button will show the current on/off state.
+      Toggle a switch or outlet on/off. The button shows the current state.
     </div>
   </div>
 
@@ -51,10 +51,13 @@
     const offColorPicker = initColorPicker("offColorPicker", "offColor", "#8e8e93", saveSettings, getSettings);
     const onColorPicker = initColorPicker("onColorPicker", "onColor", "#ff9500", saveSettings, getSettings);
 
+    // Simple on/off devices only
+    const TOGGLE_TYPES = ["switch", "outlet"];
+
     function onSettingsLoaded(settings) {
       portInput.value = settings.port || "";
       hideConnectionError();
-      populateTargetSelect(targetSelect, settings.port, settings.target);
+      populateTargetSelect(targetSelect, settings.port, settings.target, { types: TOGGLE_TYPES });
       offColorPicker.setInitialValue();
       onColorPicker.setInitialValue();
     }
@@ -66,12 +69,12 @@
     portInput.addEventListener("change", () => {
       const port = portInput.value ? parseInt(portInput.value, 10) : undefined;
       saveSettings({ port });
-      populateTargetSelect(targetSelect, port, getSettings().target);
+      populateTargetSelect(targetSelect, port, getSettings().target, { types: TOGGLE_TYPES });
     });
 
     refreshBtn.addEventListener("click", () => {
       hideConnectionError();
-      populateTargetSelect(targetSelect, getSettings().port, getSettings().target);
+      populateTargetSelect(targetSelect, getSettings().port, getSettings().target, { types: TOGGLE_TYPES });
     });
   </script>
 </body>

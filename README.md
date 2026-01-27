@@ -12,9 +12,9 @@ Requires **Itsyhome Pro** with the webhook server enabled (runs on `localhost:84
 
 | Action | Description |
 |--------|-------------|
-| **Toggle device** | Toggle any HomeKit device on/off. Icon changes based on device type (light, switch, outlet, fan, etc.) |
+| **Switch/Outlet** | Toggle a switch or outlet on/off |
 | **Execute scene** | Trigger a HomeKit scene |
-| **Set brightness** | Set a light to a specific brightness level. Shows current brightness on the key |
+| **Light** | Toggle a light on/off. Optional target brightness when turning on. Shows current brightness |
 | **Lock** | Lock/unlock a door lock. Green locked icon, orange unlocked icon. 30s optimistic hold |
 | **AC** | Toggle thermostat or AC on/off. Mode-aware icon (flame/snowflake/thermometer). Shows temperature |
 | **Status** | Display-only — shows current temperature or humidity from sensors |
