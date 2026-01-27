@@ -11,11 +11,10 @@ vi.mock("../../src/api/itsyhome-client", () => ({
   ItsyhomeClient: vi.fn(),
 }));
 
-vi.mock("../../src/icons", () => ({
-  getDeviceIcon: vi.fn((type: string, isOn: boolean, apiIcon?: string) => {
-    const icon = apiIcon ?? (type === "blinds" ? "venetian-mask" : "question");
-    return `imgs/icons/${icon}-${isOn ? "on" : "off"}.png`;
-  }),
+vi.mock("../../src/icon-renderer", () => ({
+  renderIcon: vi.fn((iconName: string, _color: string, isOn: boolean) =>
+    `data:mock/${iconName}/${isOn ? "on" : "off"}`),
+  clearIconCache: vi.fn(),
 }));
 
 import { BlindsAction } from "../../src/actions/blinds";
@@ -51,7 +50,7 @@ describe("BlindsAction", () => {
 
       await action.onWillAppear(ev as any);
 
-      expect(ev.action.setImage).toHaveBeenCalledWith("imgs/icons/venetian-mask-on.png");
+      expect(ev.action.setImage).toHaveBeenCalledWith("data:mock/arrows-out-line-vertical/on");
       expect(ev.action.setTitle).toHaveBeenCalledWith("75%");
     });
 
@@ -63,7 +62,7 @@ describe("BlindsAction", () => {
 
       await action.onWillAppear(ev as any);
 
-      expect(ev.action.setImage).toHaveBeenCalledWith("imgs/icons/venetian-mask-off.png");
+      expect(ev.action.setImage).toHaveBeenCalledWith("data:mock/arrows-out-line-vertical/off");
     });
 
     it("defaults direction to open", async () => {
@@ -74,7 +73,7 @@ describe("BlindsAction", () => {
 
       await action.onWillAppear(ev as any);
 
-      expect(ev.action.setImage).toHaveBeenCalledWith("imgs/icons/venetian-mask-on.png");
+      expect(ev.action.setImage).toHaveBeenCalledWith("data:mock/arrows-out-line-vertical/on");
     });
 
     it("shows label with position", async () => {
@@ -215,7 +214,7 @@ describe("BlindsAction", () => {
 
       await action.onDidReceiveSettings(ev as any);
 
-      expect(ev.action.setImage).toHaveBeenCalledWith("imgs/icons/venetian-mask-off.png");
+      expect(ev.action.setImage).toHaveBeenCalledWith("data:mock/arrows-out-line-vertical/off");
     });
 
     it("uses custom port", async () => {

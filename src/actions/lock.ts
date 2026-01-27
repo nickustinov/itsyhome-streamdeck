@@ -8,11 +8,16 @@ import streamDeck, {
   type KeyAction,
 } from "@elgato/streamdeck";
 import { ItsyhomeClient, type DeviceState } from "../api/itsyhome-client";
-import { getLockIcon } from "../icons";
+import { renderIcon } from "../icon-renderer";
+
+const DEFAULT_LOCKED_COLOR = "#30d158"; // Green - secure
+const DEFAULT_UNLOCKED_COLOR = "#ff9500"; // Orange - attention
 
 type LockSettings = {
   target: string;
   port: number;
+  lockedColor?: string;
+  unlockedColor?: string;
 };
 
 const POLL_INTERVAL_MS = 3000;
@@ -39,7 +44,7 @@ export class LockAction extends SingletonAction<LockSettings> {
     }
 
     if (target) {
-      await this.updateState(ev.action as KeyAction<LockSettings>, target);
+      await this.updateState(ev.action as KeyAction<LockSettings>, target, ev.payload.settings);
     }
 
     this.startPolling();
@@ -60,7 +65,7 @@ export class LockAction extends SingletonAction<LockSettings> {
     }
 
     if (target) {
-      await this.updateState(ev.action as KeyAction<LockSettings>, target);
+      await this.updateState(ev.action as KeyAction<LockSettings>, target, ev.payload.settings);
     }
   }
 
@@ -86,7 +91,7 @@ export class LockAction extends SingletonAction<LockSettings> {
       const nowLocked = !wasLocked;
       this.lockCache.set(target, { ...cached, isLocked: nowLocked });
       this.optimisticUntil.set(target, Date.now() + 30000);
-      await this.applyVisualState(ev.action as KeyAction<LockSettings>, nowLocked, cached?.icon);
+      await this.applyVisualState(ev.action as KeyAction<LockSettings>, nowLocked, cached?.icon, ev.payload.settings);
     } catch (err) {
       streamDeck.logger.error(`Lock toggle error: ${err}`);
       await ev.action.showAlert();
@@ -101,7 +106,7 @@ export class LockAction extends SingletonAction<LockSettings> {
         if (!("setState" in action)) continue;
         const settings = await action.getSettings<LockSettings>();
         if (settings.target) {
-          await this.updateState(action as KeyAction<LockSettings>, settings.target);
+          await this.updateState(action as KeyAction<LockSettings>, settings.target, settings);
         }
       }
     }, POLL_INTERVAL_MS);
@@ -114,7 +119,7 @@ export class LockAction extends SingletonAction<LockSettings> {
     }
   }
 
-  private async updateState(action: KeyAction<LockSettings>, target: string): Promise<void> {
+  private async updateState(action: KeyAction<LockSettings>, target: string, settings: LockSettings): Promise<void> {
     try {
       const holdUntil = this.optimisticUntil.get(target);
       if (holdUntil && Date.now() < holdUntil) return;
@@ -128,14 +133,24 @@ export class LockAction extends SingletonAction<LockSettings> {
       const isLocked = state?.locked ?? true;
       const icon = device.icon;
       this.lockCache.set(target, { isLocked, icon });
-      await this.applyVisualState(action, isLocked, icon);
+      await this.applyVisualState(action, isLocked, icon, settings);
     } catch {
       // Server might not be running
     }
   }
 
-  private async applyVisualState(action: KeyAction<LockSettings>, isLocked: boolean, apiIcon?: string): Promise<void> {
-    await action.setImage(getLockIcon(isLocked, apiIcon));
+  private async applyVisualState(
+    action: KeyAction<LockSettings>,
+    isLocked: boolean,
+    apiIcon?: string,
+    settings?: LockSettings,
+  ): Promise<void> {
+    const iconName = apiIcon ?? "lock";
+    const color = isLocked
+      ? (settings?.lockedColor || DEFAULT_LOCKED_COLOR)
+      : (settings?.unlockedColor || DEFAULT_UNLOCKED_COLOR);
+    const icon = await renderIcon(iconName, color, isLocked);
+    await action.setImage(icon);
     await action.setState(isLocked ? 1 : 0);
   }
 }

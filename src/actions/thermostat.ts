@@ -8,13 +8,18 @@ import streamDeck, {
   type KeyAction,
 } from "@elgato/streamdeck";
 import { ItsyhomeClient, type DeviceState } from "../api/itsyhome-client";
-import { getThermostatIcon } from "../icons";
+import { renderIcon } from "../icon-renderer";
+
+const DEFAULT_OFF_COLOR = "#8e8e93"; // Gray
+const DEFAULT_ON_COLOR = "#ff9500"; // Orange
 
 type ThermostatSettings = {
   target: string;
   port: number;
   label: string;
   display: "current-target" | "current" | "target";
+  offColor?: string;
+  onColor?: string;
 };
 
 type ThermostatCache = {
@@ -88,10 +93,12 @@ export class ThermostatAction extends SingletonAction<ThermostatSettings> {
       if (cached) {
         const newIsOn = !cached.isOn;
         this.stateCache.set(target, { ...cached, isOn: newIsOn });
-        await (ev.action as KeyAction<ThermostatSettings>).setImage(
-          getThermostatIcon(cached.deviceType, newIsOn, cached.mode, cached.icon),
+        await this.applyVisualState(
+          ev.action as KeyAction<ThermostatSettings>,
+          newIsOn,
+          cached.icon,
+          ev.payload.settings,
         );
-        await (ev.action as KeyAction<ThermostatSettings>).setState(newIsOn ? 1 : 0);
       }
     } catch (err) {
       streamDeck.logger.error(`Thermostat toggle error: ${err}`);
@@ -150,11 +157,25 @@ export class ThermostatAction extends SingletonAction<ThermostatSettings> {
       const label = settings.label;
       const title = label && tempStr ? `${label}\n${tempStr}` : label || tempStr;
 
-      await action.setImage(getThermostatIcon(device.type, isOn, mode, icon));
-      await action.setState(isOn ? 1 : 0);
+      await this.applyVisualState(action, isOn, icon, settings);
       await action.setTitle(title);
     } catch {
       // Server might not be running
     }
+  }
+
+  private async applyVisualState(
+    action: KeyAction<ThermostatSettings>,
+    isOn: boolean,
+    apiIcon?: string,
+    settings?: ThermostatSettings,
+  ): Promise<void> {
+    const iconName = apiIcon ?? "thermometer";
+    const color = isOn
+      ? (settings?.onColor || DEFAULT_ON_COLOR)
+      : (settings?.offColor || DEFAULT_OFF_COLOR);
+    const icon = await renderIcon(iconName, color, isOn);
+    await action.setImage(icon);
+    await action.setState(isOn ? 1 : 0);
   }
 }

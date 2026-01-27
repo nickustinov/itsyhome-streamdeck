@@ -11,8 +11,10 @@ vi.mock("../../src/api/itsyhome-client", () => ({
   ItsyhomeClient: vi.fn(),
 }));
 
-vi.mock("../../src/icons", () => ({
-  getLockIcon: vi.fn((isLocked: boolean, apiIcon?: string) => `imgs/icons/${apiIcon ?? "lock"}-${isLocked ? "on" : "off"}.png`),
+vi.mock("../../src/icon-renderer", () => ({
+  renderIcon: vi.fn((iconName: string, _color: string, isOn: boolean) =>
+    `data:mock/${iconName}/${isOn ? "on" : "off"}`),
+  clearIconCache: vi.fn(),
 }));
 
 import { LockAction } from "../../src/actions/lock";
@@ -48,7 +50,7 @@ describe("LockAction", () => {
 
       await action.onWillAppear(ev as any);
 
-      expect(ev.action.setImage).toHaveBeenCalledWith("imgs/icons/lock-on.png");
+      expect(ev.action.setImage).toHaveBeenCalledWith("data:mock/lock/on");
       expect(ev.action.setState).toHaveBeenCalledWith(1);
     });
 
@@ -64,7 +66,7 @@ describe("LockAction", () => {
 
       await action.onWillAppear(ev as any);
 
-      expect(ev.action.setImage).toHaveBeenCalledWith("imgs/icons/lock-off.png");
+      expect(ev.action.setImage).toHaveBeenCalledWith("data:mock/lock/off");
       expect(ev.action.setState).toHaveBeenCalledWith(0);
     });
 
@@ -80,7 +82,7 @@ describe("LockAction", () => {
 
       await action.onWillAppear(ev as any);
 
-      expect(ev.action.setImage).toHaveBeenCalledWith("imgs/icons/shield-on.png");
+      expect(ev.action.setImage).toHaveBeenCalledWith("data:mock/shield/on");
     });
 
     it("uses custom port", async () => {
@@ -255,7 +257,7 @@ describe("LockAction", () => {
       await action.onKeyDown(ev as any);
 
       expect(mockClient.toggle).toHaveBeenCalledWith("Lock");
-      expect(mockAction.setImage).toHaveBeenCalledWith("imgs/icons/lock-off.png");
+      expect(mockAction.setImage).toHaveBeenCalledWith("data:mock/lock/off");
       expect(mockAction.setState).toHaveBeenCalledWith(0);
     });
 
@@ -350,7 +352,7 @@ describe("LockAction", () => {
       await action.onKeyDown(ev as any);
 
       // wasLocked defaults to true, so nowLocked = false
-      expect(ev.action.setImage).toHaveBeenCalledWith("imgs/icons/lock-off.png");
+      expect(ev.action.setImage).toHaveBeenCalledWith("data:mock/lock/off");
       expect(ev.action.setState).toHaveBeenCalledWith(0);
     });
 

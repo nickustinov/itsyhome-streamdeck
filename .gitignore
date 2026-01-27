@@ -1,6 +1,7 @@
 node_modules/
 com.nickustinov.itsyhome.sdPlugin/bin/
 com.nickustinov.itsyhome.sdPlugin/logs/
+com.nickustinov.itsyhome.sdPlugin/imgs/icons/
 *.js.map
 dist/
 docs/

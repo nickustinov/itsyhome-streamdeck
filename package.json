@@ -5,12 +5,14 @@
   "private": true,
   "type": "module",
   "scripts": {
+    "clean": "rm -rf com.nickustinov.itsyhome.sdPlugin/imgs/icons && rm -rf com.nickustinov.itsyhome.sdPlugin/bin",
+    "generate-icons": "node scripts/generate-icons.js",
+    "prebuild": "npm run clean && npm run generate-icons",
     "build": "rollup -c",
     "watch": "rollup -c -w",
     "test": "vitest run",
     "test:coverage": "vitest run --coverage",
-    "test:watch": "vitest",
-    "generate-icons": "node scripts/generate-icons.js"
+    "test:watch": "vitest"
   },
   "devDependencies": {
     "@elgato/streamdeck": "^2.0.0",

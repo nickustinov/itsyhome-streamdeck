@@ -134,9 +134,8 @@ function hideConnectionError() {
  * Creates a row of preset color swatches with an optional custom color input.
  */
 const COLOR_PRESETS = [
-  { name: "White", value: "#ffffff" },
   { name: "Gray", value: "#8e8e93" },
-  { name: "Red", value: "#ff3b30" },
+  { name: "White", value: "#ffffff" },
   { name: "Orange", value: "#ff9500" },
   { name: "Yellow", value: "#ffcc00" },
   { name: "Lime", value: "#32d74b" },
@@ -145,6 +144,7 @@ const COLOR_PRESETS = [
   { name: "Indigo", value: "#5856d6" },
   { name: "Purple", value: "#af52de" },
   { name: "Pink", value: "#ff2d55" },
+  { name: "Red", value: "#ff3b30" },
   { name: "Brown", value: "#a2845e" },
 ];
 

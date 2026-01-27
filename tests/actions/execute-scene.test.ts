@@ -11,8 +11,10 @@ vi.mock("../../src/api/itsyhome-client", () => ({
   ItsyhomeClient: vi.fn(),
 }));
 
-vi.mock("../../src/icons", () => ({
-  getSceneIcon: vi.fn((apiIcon?: string) => `imgs/icons/${apiIcon ?? "sparkle"}-on.png`),
+vi.mock("../../src/icon-renderer", () => ({
+  renderIcon: vi.fn((iconName: string, _color: string, isOn: boolean) =>
+    `data:mock/${iconName}/${isOn ? "on" : "off"}`),
+  clearIconCache: vi.fn(),
 }));
 
 import { ExecuteSceneAction } from "../../src/actions/execute-scene";
@@ -47,7 +49,7 @@ describe("ExecuteSceneAction", () => {
 
       await action.onWillAppear(ev as any);
 
-      expect(ev.action.setImage).toHaveBeenCalledWith("imgs/icons/sun-on.png");
+      expect(ev.action.setImage).toHaveBeenCalledWith("data:mock/sun/on");
       expect(ev.action.setTitle).toHaveBeenCalledWith("Good Morning");
     });
 
@@ -83,7 +85,7 @@ describe("ExecuteSceneAction", () => {
 
       await action.onDidReceiveSettings(ev as any);
 
-      expect(ev.action.setImage).toHaveBeenCalledWith("imgs/icons/star-on.png");
+      expect(ev.action.setImage).toHaveBeenCalledWith("data:mock/star/on");
       expect(ev.action.setTitle).toHaveBeenCalledWith("Updated Scene");
     });
 

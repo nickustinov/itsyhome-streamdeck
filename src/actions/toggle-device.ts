@@ -8,11 +8,31 @@ import streamDeck, {
   type KeyAction,
 } from "@elgato/streamdeck";
 import { ItsyhomeClient, type DeviceState } from "../api/itsyhome-client";
-import { getDeviceIcon, getGroupIcon } from "../icons";
+import { renderIcon } from "../icon-renderer";
+
+const DEFAULT_OFF_COLOR = "#8e8e93"; // Gray
+const DEFAULT_ON_COLOR = "#ff9500"; // Orange
+
+const DEVICE_TYPE_FALLBACK: Record<string, string> = {
+  "light": "lightbulb",
+  "switch": "switch",
+  "outlet": "plug",
+  "fan": "fan",
+  "thermostat": "thermometer",
+  "heater-cooler": "thermometer",
+  "lock": "lock",
+  "blinds": "venetian-mask",
+  "garage-door": "garage",
+  "temperature-sensor": "thermometer-simple",
+  "humidity-sensor": "drop",
+  "security-system": "shield-check",
+};
 
 type ToggleSettings = {
   target: string;
   port: number;
+  offColor?: string;
+  onColor?: string;
 };
 
 const POLL_INTERVAL_MS = 3000;
@@ -39,7 +59,7 @@ export class ToggleDeviceAction extends SingletonAction<ToggleSettings> {
     }
 
     if (target) {
-      await this.updateState(ev.action as KeyAction<ToggleSettings>, target);
+      await this.updateState(ev.action as KeyAction<ToggleSettings>, target, ev.payload.settings);
     }
 
     this.startPolling();
@@ -60,7 +80,7 @@ export class ToggleDeviceAction extends SingletonAction<ToggleSettings> {
     }
 
     if (target) {
-      await this.updateState(ev.action as KeyAction<ToggleSettings>, target);
+      await this.updateState(ev.action as KeyAction<ToggleSettings>, target, ev.payload.settings);
     }
   }
 
@@ -69,27 +89,31 @@ export class ToggleDeviceAction extends SingletonAction<ToggleSettings> {
 
     if (!target) {
       await ev.action.showAlert();
+      await ev.action.setState(0);
       return;
     }
+
+    const cached = this.deviceCache.get(target);
 
     try {
       const result = await this.client.toggle(target);
       if (result.status === "error") {
         streamDeck.logger.error(`Toggle failed: ${result.message}`);
         await ev.action.showAlert();
+        await ev.action.setState(cached?.isOn ? 1 : 0);
         return;
       }
 
       // Optimistic update: flip the cached state immediately
-      const cached = this.deviceCache.get(target);
       if (cached) {
         const newIsOn = !cached.isOn;
         this.deviceCache.set(target, { ...cached, isOn: newIsOn });
-        await this.applyVisualState(ev.action as KeyAction<ToggleSettings>, target, cached.type, newIsOn, cached.icon);
+        await this.applyVisualState(ev.action as KeyAction<ToggleSettings>, target, cached.type, newIsOn, cached.icon, ev.payload.settings);
       }
     } catch (err) {
       streamDeck.logger.error(`Toggle error: ${err}`);
       await ev.action.showAlert();
+      await ev.action.setState(cached?.isOn ? 1 : 0);
     }
   }
 
@@ -101,7 +125,7 @@ export class ToggleDeviceAction extends SingletonAction<ToggleSettings> {
         if (!("setState" in action)) continue;
         const settings = await action.getSettings<ToggleSettings>();
         if (settings.target) {
-          await this.updateState(action as KeyAction<ToggleSettings>, settings.target);
+          await this.updateState(action as KeyAction<ToggleSettings>, settings.target, settings);
         }
       }
     }, POLL_INTERVAL_MS);
@@ -114,7 +138,7 @@ export class ToggleDeviceAction extends SingletonAction<ToggleSettings> {
     }
   }
 
-  private async updateState(action: KeyAction<ToggleSettings>, target: string): Promise<void> {
+  private async updateState(action: KeyAction<ToggleSettings>, target: string, settings: ToggleSettings): Promise<void> {
     try {
       const info = await this.client.getDeviceInfo(target);
       const device = Array.isArray(info) ? info[0] : info;
@@ -125,7 +149,7 @@ export class ToggleDeviceAction extends SingletonAction<ToggleSettings> {
       const icon = device.icon;
 
       this.deviceCache.set(target, { type: device.type, isOn, icon });
-      await this.applyVisualState(action, target, device.type, isOn, icon);
+      await this.applyVisualState(action, target, device.type, isOn, icon, settings);
     } catch {
       // Server might not be running — silently ignore
     }
@@ -137,12 +161,19 @@ export class ToggleDeviceAction extends SingletonAction<ToggleSettings> {
     deviceType: string,
     isOn: boolean,
     apiIcon?: string,
+    settings?: ToggleSettings,
   ): Promise<void> {
-    // Groups can be "group.Name" (global) or "Room/group.Name" (room-scoped)
+    // Determine icon name
     const isGroup = target.startsWith("group.") || target.includes("/group.");
-    const icon = isGroup
-      ? getGroupIcon(isOn, apiIcon)
-      : getDeviceIcon(deviceType, isOn, apiIcon);
+    const iconName = apiIcon ?? (isGroup ? "squares-four" : DEVICE_TYPE_FALLBACK[deviceType]) ?? "question";
+
+    // Get color based on state
+    const color = isOn
+      ? (settings?.onColor || DEFAULT_ON_COLOR)
+      : (settings?.offColor || DEFAULT_OFF_COLOR);
+
+    // Render tinted icon
+    const icon = await renderIcon(iconName, color, isOn);
 
     await action.setImage(icon);
     await action.setState(isOn ? 1 : 0);

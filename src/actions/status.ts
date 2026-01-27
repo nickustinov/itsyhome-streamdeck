@@ -6,12 +6,20 @@ import {
   WillDisappearEvent,
 } from "@elgato/streamdeck";
 import { ItsyhomeClient, type DeviceState } from "../api/itsyhome-client";
-import { getDeviceIcon } from "../icons";
+import { renderIcon } from "../icon-renderer";
+
+const DEFAULT_COLOR = "#8e8e93"; // Gray
+
+const DEVICE_TYPE_FALLBACK: Record<string, string> = {
+  "temperature-sensor": "thermometer-simple",
+  "humidity-sensor": "drop",
+};
 
 type StatusSettings = {
   target: string;
   port: number;
   label: string;
+  color?: string;
 };
 
 const POLL_INTERVAL_MS = 3000;
@@ -98,7 +106,10 @@ export class StatusAction extends SingletonAction<StatusSettings> {
       const label = settings.label;
       const title = label && value ? `${label}\n${value}` : label || value;
 
-      await action.setImage(getDeviceIcon(device.type, true, device.icon));
+      const iconName = device.icon ?? DEVICE_TYPE_FALLBACK[device.type] ?? "info";
+      const color = settings.color || DEFAULT_COLOR;
+      const icon = await renderIcon(iconName, color, true);
+      await action.setImage(icon);
       await action.setTitle(title);
     } catch {
       // Server might not be running

@@ -7,13 +7,18 @@ import streamDeck, {
   WillDisappearEvent,
 } from "@elgato/streamdeck";
 import { ItsyhomeClient, type DeviceState } from "../api/itsyhome-client";
-import { getDeviceIcon } from "../icons";
+import { renderIcon } from "../icon-renderer";
+
+const DEFAULT_OFF_COLOR = "#8e8e93"; // Gray
+const DEFAULT_ON_COLOR = "#ff9500"; // Orange
 
 type BrightnessSettings = {
   target: string;
   brightness: number;
   port: number;
   label: string;
+  offColor?: string;
+  onColor?: string;
 };
 
 const POLL_INTERVAL_MS = 3000;
@@ -25,7 +30,7 @@ export class SetBrightnessAction extends SingletonAction<BrightnessSettings> {
   private activeContexts = new Set<string>();
 
   override async onWillAppear(ev: WillAppearEvent<BrightnessSettings>): Promise<void> {
-    const { target, brightness, port } = ev.payload.settings;
+    const { target, port } = ev.payload.settings;
     this.activeContexts.add(ev.action.id);
 
     if (port) {
@@ -33,7 +38,7 @@ export class SetBrightnessAction extends SingletonAction<BrightnessSettings> {
     }
 
     if (target) {
-      await this.updateTitle(ev.action, target, ev.payload.settings);
+      await this.updateDisplay(ev.action, target, ev.payload.settings);
     }
 
     this.startPolling();
@@ -54,7 +59,7 @@ export class SetBrightnessAction extends SingletonAction<BrightnessSettings> {
     }
 
     if (target) {
-      await this.updateTitle(ev.action, target, ev.payload.settings);
+      await this.updateDisplay(ev.action, target, ev.payload.settings);
     }
   }
 
@@ -75,7 +80,7 @@ export class SetBrightnessAction extends SingletonAction<BrightnessSettings> {
       }
 
       await ev.action.showOk();
-      await this.updateTitle(ev.action, target, ev.payload.settings);
+      await this.updateDisplay(ev.action, target, ev.payload.settings);
     } catch (err) {
       streamDeck.logger.error(`Brightness error: ${err}`);
       await ev.action.showAlert();
@@ -89,7 +94,7 @@ export class SetBrightnessAction extends SingletonAction<BrightnessSettings> {
       for (const action of this.actions) {
         const settings = await action.getSettings<BrightnessSettings>();
         if (settings.target) {
-          await this.updateTitle(action, settings.target, settings);
+          await this.updateDisplay(action, settings.target, settings);
         }
       }
     }, POLL_INTERVAL_MS);
@@ -102,7 +107,7 @@ export class SetBrightnessAction extends SingletonAction<BrightnessSettings> {
     }
   }
 
-  private async updateTitle(
+  private async updateDisplay(
     action: { setTitle(title: string): Promise<void>; setImage(image: string): Promise<void> },
     target: string,
     settings: BrightnessSettings,
@@ -119,7 +124,12 @@ export class SetBrightnessAction extends SingletonAction<BrightnessSettings> {
       const label = settings.label;
       const title = label && value ? `${label}\n${value}` : label || value;
 
-      await action.setImage(getDeviceIcon(device.type, isOn, device.icon));
+      const iconName = device.icon ?? "lightbulb";
+      const color = isOn
+        ? (settings.onColor || DEFAULT_ON_COLOR)
+        : (settings.offColor || DEFAULT_OFF_COLOR);
+      const icon = await renderIcon(iconName, color, isOn);
+      await action.setImage(icon);
       await action.setTitle(title);
     } catch {
       const value = `${settings.brightness}%`;

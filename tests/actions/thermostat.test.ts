@@ -11,11 +11,10 @@ vi.mock("../../src/api/itsyhome-client", () => ({
   ItsyhomeClient: vi.fn(),
 }));
 
-vi.mock("../../src/icons", () => ({
-  getThermostatIcon: vi.fn((type: string, isOn: boolean, mode?: string) => {
-    if (isOn && mode) return `imgs/device-types/${type}-${mode}.png`;
-    return `imgs/device-types/${type}-off.png`;
-  }),
+vi.mock("../../src/icon-renderer", () => ({
+  renderIcon: vi.fn((iconName: string, _color: string, isOn: boolean) =>
+    `data:mock/${iconName}/${isOn ? "on" : "off"}`),
+  clearIconCache: vi.fn(),
 }));
 
 import { ThermostatAction } from "../../src/actions/thermostat";

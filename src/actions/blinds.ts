@@ -7,13 +7,18 @@ import streamDeck, {
   WillDisappearEvent,
 } from "@elgato/streamdeck";
 import { ItsyhomeClient, type DeviceState } from "../api/itsyhome-client";
-import { getDeviceIcon } from "../icons";
+import { renderIcon } from "../icon-renderer";
+
+const DEFAULT_CLOSED_COLOR = "#8e8e93"; // Gray
+const DEFAULT_OPEN_COLOR = "#ff9500"; // Orange
 
 type BlindsSettings = {
   target: string;
   direction: "open" | "close";
   label: string;
   port: number;
+  closedColor?: string;
+  openColor?: string;
 };
 
 const POLL_INTERVAL_MS = 3000;
@@ -114,7 +119,12 @@ export class BlindsAction extends SingletonAction<BlindsSettings> {
   ): Promise<void> {
     const direction = settings.direction || "open";
     const isOpen = direction === "open";
-    await action.setImage(getDeviceIcon("blinds", isOpen, apiIcon));
+    const iconName = apiIcon ?? "arrows-out-line-vertical";
+    const color = isOpen
+      ? (settings.openColor || DEFAULT_OPEN_COLOR)
+      : (settings.closedColor || DEFAULT_CLOSED_COLOR);
+    const icon = await renderIcon(iconName, color, isOpen);
+    await action.setImage(icon);
   }
 
   private async updateDisplay(

@@ -11,11 +11,10 @@ vi.mock("../../src/api/itsyhome-client", () => ({
   ItsyhomeClient: vi.fn(),
 }));
 
-vi.mock("../../src/icons", () => ({
-  getDeviceIcon: vi.fn((type: string, isOn: boolean, apiIcon?: string) => {
-    const icon = apiIcon ?? (type === "light" ? "lightbulb" : type);
-    return `imgs/icons/${icon}-${isOn ? "on" : "off"}.png`;
-  }),
+vi.mock("../../src/icon-renderer", () => ({
+  renderIcon: vi.fn((iconName: string, _color: string, isOn: boolean) =>
+    `data:mock/${iconName}/${isOn ? "on" : "off"}`),
+  clearIconCache: vi.fn(),
 }));
 
 import { SetBrightnessAction } from "../../src/actions/set-brightness";
@@ -96,7 +95,7 @@ describe("SetBrightnessAction", () => {
 
       await action.onWillAppear(ev as any);
 
-      expect(ev.action.setImage).toHaveBeenCalledWith("imgs/icons/lightbulb-on.png");
+      expect(ev.action.setImage).toHaveBeenCalledWith("data:mock/lightbulb/on");
     });
 
     it("infers on state from brightness when on is undefined", async () => {
@@ -111,7 +110,7 @@ describe("SetBrightnessAction", () => {
 
       await action.onWillAppear(ev as any);
 
-      expect(ev.action.setImage).toHaveBeenCalledWith("imgs/icons/lightbulb-on.png");
+      expect(ev.action.setImage).toHaveBeenCalledWith("data:mock/lightbulb/on");
     });
 
     it("uses custom port", async () => {

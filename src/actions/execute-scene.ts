@@ -6,11 +6,14 @@ import streamDeck, {
   WillAppearEvent,
 } from "@elgato/streamdeck";
 import { ItsyhomeClient, type SceneInfo } from "../api/itsyhome-client";
-import { getSceneIcon } from "../icons";
+import { renderIcon } from "../icon-renderer";
+
+const DEFAULT_COLOR = "#ff9500"; // Orange
 
 type SceneSettings = {
   scene: string;
   port: number;
+  color?: string;
 };
 
 @action({ UUID: "com.nickustinov.itsyhome.scene" })
@@ -25,10 +28,10 @@ export class ExecuteSceneAction extends SingletonAction<SceneSettings> {
     }
 
     if (scene) {
-      await this.updateSceneIcon(ev.action, scene);
+      await this.updateSceneIcon(ev.action, scene, ev.payload.settings);
       await ev.action.setTitle(scene);
     } else {
-      await ev.action.setImage(getSceneIcon());
+      await this.setDefaultIcon(ev.action, ev.payload.settings);
     }
   }
 
@@ -40,21 +43,37 @@ export class ExecuteSceneAction extends SingletonAction<SceneSettings> {
     }
 
     if (scene) {
-      await this.updateSceneIcon(ev.action, scene);
+      await this.updateSceneIcon(ev.action, scene, ev.payload.settings);
       await ev.action.setTitle(scene);
     } else {
-      await ev.action.setImage(getSceneIcon());
+      await this.setDefaultIcon(ev.action, ev.payload.settings);
     }
   }
 
-  private async updateSceneIcon(action: { setImage(image: string): Promise<void> }, sceneName: string): Promise<void> {
+  private async setDefaultIcon(
+    action: { setImage(image: string): Promise<void> },
+    settings: SceneSettings,
+  ): Promise<void> {
+    const color = settings.color || DEFAULT_COLOR;
+    const icon = await renderIcon("sparkle", color, true);
+    await action.setImage(icon);
+  }
+
+  private async updateSceneIcon(
+    action: { setImage(image: string): Promise<void> },
+    sceneName: string,
+    settings: SceneSettings,
+  ): Promise<void> {
     try {
       const scenes = await this.client.listScenes();
       const scene = scenes.find((s: SceneInfo) => s.name === sceneName);
-      await action.setImage(getSceneIcon(scene?.icon));
+      const iconName = scene?.icon ?? "sparkle";
+      const color = settings.color || DEFAULT_COLOR;
+      const icon = await renderIcon(iconName, color, true);
+      await action.setImage(icon);
     } catch {
       // Fallback to default icon if API unavailable
-      await action.setImage(getSceneIcon());
+      await this.setDefaultIcon(action, settings);
     }
   }
 

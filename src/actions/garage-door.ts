@@ -8,11 +8,16 @@ import streamDeck, {
   type KeyAction,
 } from "@elgato/streamdeck";
 import { ItsyhomeClient, type DeviceState } from "../api/itsyhome-client";
-import { getGarageDoorIcon } from "../icons";
+import { renderIcon } from "../icon-renderer";
+
+const DEFAULT_CLOSED_COLOR = "#8e8e93"; // Gray
+const DEFAULT_OPEN_COLOR = "#ff9500"; // Orange
 
 type GarageDoorSettings = {
   target: string;
   port: number;
+  closedColor?: string;
+  openColor?: string;
 };
 
 const POLL_INTERVAL_MS = 3000;
@@ -39,10 +44,10 @@ export class GarageDoorAction extends SingletonAction<GarageDoorSettings> {
     }
 
     // Show closed state until first poll confirms actual state
-    await this.applyVisualState(ev.action as KeyAction<GarageDoorSettings>, "closed");
+    await this.applyVisualState(ev.action as KeyAction<GarageDoorSettings>, "closed", undefined, ev.payload.settings);
 
     if (target) {
-      await this.updateState(ev.action as KeyAction<GarageDoorSettings>, target);
+      await this.updateState(ev.action as KeyAction<GarageDoorSettings>, target, ev.payload.settings);
     }
 
     this.startPolling();
@@ -63,9 +68,9 @@ export class GarageDoorAction extends SingletonAction<GarageDoorSettings> {
     }
 
     if (target) {
-      await this.updateState(ev.action as KeyAction<GarageDoorSettings>, target);
+      await this.updateState(ev.action as KeyAction<GarageDoorSettings>, target, ev.payload.settings);
     } else {
-      await this.applyVisualState(ev.action as KeyAction<GarageDoorSettings>, "closed");
+      await this.applyVisualState(ev.action as KeyAction<GarageDoorSettings>, "closed", undefined, ev.payload.settings);
     }
   }
 
@@ -91,7 +96,7 @@ export class GarageDoorAction extends SingletonAction<GarageDoorSettings> {
       const newState = currentState === "closed" || currentState === "closing" ? "open" : "closed";
       this.doorCache.set(target, { ...cached, doorState: newState });
       this.optimisticUntil.set(target, Date.now() + 30000);
-      await this.applyVisualState(ev.action as KeyAction<GarageDoorSettings>, newState, cached?.icon);
+      await this.applyVisualState(ev.action as KeyAction<GarageDoorSettings>, newState, cached?.icon, ev.payload.settings);
     } catch (err) {
       streamDeck.logger.error(`Garage door toggle error: ${err}`);
       await ev.action.showAlert();
@@ -106,7 +111,7 @@ export class GarageDoorAction extends SingletonAction<GarageDoorSettings> {
         if (!("setState" in action)) continue;
         const settings = await action.getSettings<GarageDoorSettings>();
         if (settings.target) {
-          await this.updateState(action as KeyAction<GarageDoorSettings>, settings.target);
+          await this.updateState(action as KeyAction<GarageDoorSettings>, settings.target, settings);
         }
       }
     }, POLL_INTERVAL_MS);
@@ -119,7 +124,7 @@ export class GarageDoorAction extends SingletonAction<GarageDoorSettings> {
     }
   }
 
-  private async updateState(action: KeyAction<GarageDoorSettings>, target: string): Promise<void> {
+  private async updateState(action: KeyAction<GarageDoorSettings>, target: string, settings: GarageDoorSettings): Promise<void> {
     try {
       const holdUntil = this.optimisticUntil.get(target);
       if (holdUntil && Date.now() < holdUntil) return;
@@ -133,15 +138,25 @@ export class GarageDoorAction extends SingletonAction<GarageDoorSettings> {
       const doorState = state?.doorState ?? "closed";
       const icon = device.icon;
       this.doorCache.set(target, { doorState, icon });
-      await this.applyVisualState(action, doorState, icon);
+      await this.applyVisualState(action, doorState, icon, settings);
     } catch {
       // Server might not be running
     }
   }
 
-  private async applyVisualState(action: KeyAction<GarageDoorSettings>, doorState: string, apiIcon?: string): Promise<void> {
+  private async applyVisualState(
+    action: KeyAction<GarageDoorSettings>,
+    doorState: string,
+    apiIcon?: string,
+    settings?: GarageDoorSettings,
+  ): Promise<void> {
     const isOpen = doorState === "open" || doorState === "opening";
-    await action.setImage(getGarageDoorIcon(isOpen, apiIcon));
+    const iconName = apiIcon ?? "garage";
+    const color = isOpen
+      ? (settings?.openColor || DEFAULT_OPEN_COLOR)
+      : (settings?.closedColor || DEFAULT_CLOSED_COLOR);
+    const icon = await renderIcon(iconName, color, isOpen);
+    await action.setImage(icon);
     await action.setState(isOpen ? 1 : 0);
   }
 }

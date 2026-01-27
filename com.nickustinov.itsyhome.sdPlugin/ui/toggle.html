@@ -17,6 +17,16 @@
     </div>
 
     <div class="sdpi-item">
+      <label class="sdpi-item-label">Off color</label>
+      <div id="offColorPicker"></div>
+    </div>
+
+    <div class="sdpi-item">
+      <label class="sdpi-item-label">On color</label>
+      <div id="onColorPicker"></div>
+    </div>
+
+    <div class="sdpi-item">
       <label class="sdpi-item-label">Port</label>
       <input type="number" id="port" placeholder="8423" min="1" max="65535" />
     </div>
@@ -37,10 +47,16 @@
     const portInput = document.getElementById("port");
     const refreshBtn = document.getElementById("refresh");
 
+    // Initialize color pickers
+    const offColorPicker = initColorPicker("offColorPicker", "offColor", "#8e8e93", saveSettings, getSettings);
+    const onColorPicker = initColorPicker("onColorPicker", "onColor", "#ff9500", saveSettings, getSettings);
+
     function onSettingsLoaded(settings) {
       portInput.value = settings.port || "";
       hideConnectionError();
       populateTargetSelect(targetSelect, settings.port, settings.target);
+      offColorPicker.setInitialValue();
+      onColorPicker.setInitialValue();
     }
 
     targetSelect.addEventListener("change", () => {

@@ -30,6 +30,7 @@
       "Tooltip": "Toggle a HomeKit device on or off",
       "PropertyInspectorPath": "ui/toggle.html",
       "Controllers": ["Keypad"],
+      "DisableAutomaticStates": true,
       "States": [
         {
           "Image": "imgs/actions/toggle/key-off",
@@ -77,6 +78,7 @@
       "Tooltip": "Toggle a lock between locked and unlocked",
       "PropertyInspectorPath": "ui/lock.html",
       "Controllers": ["Keypad"],
+      "DisableAutomaticStates": true,
       "States": [
         {
           "Image": "imgs/actions/lock/key-off",
@@ -95,6 +97,7 @@
       "Tooltip": "Toggle AC or thermostat on/off",
       "PropertyInspectorPath": "ui/thermostat.html",
       "Controllers": ["Keypad"],
+      "DisableAutomaticStates": true,
       "States": [
         {
           "Image": "imgs/actions/thermostat/key-off",
@@ -143,6 +146,7 @@
       "Tooltip": "Open or close a garage door",
       "PropertyInspectorPath": "ui/garage-door.html",
       "Controllers": ["Keypad"],
+      "DisableAutomaticStates": true,
       "States": [
         {
           "Image": "imgs/actions/garage-door/key-off",
