@@ -166,10 +166,10 @@ async function copyActionDefaults() {
   const ORANGE = "#ff9500";
   const WHITE = "#ffffff";
 
-  // Action list icons (20x20, 40x40 @2x) - [svg name, dest folder, color]
+  // Action list icons (28x28, 56x56 @2x) - [svg name, dest folder, color]
   const listIcons = [
     ["lightbulb", "toggle", WHITE],
-    ["sparkle", "scene", ORANGE],
+    ["sparkle", "scene", WHITE],
     ["lightbulb", "brightness", WHITE],
     ["lock", "lock", WHITE],
     ["garage", "garage-door", WHITE],
@@ -184,15 +184,15 @@ async function copyActionDefaults() {
     const svg = await readFile(svgPath, "utf8");
     const coloredSvg = colorize(svg, color);
 
-    // 20x20 for icon.png
+    // 28x28 for icon.png
     await sharp(Buffer.from(coloredSvg), { density: 300 })
-      .resize(20, 20)
+      .resize(28, 28)
       .png({ compressionLevel: 9 })
       .toFile(join(actionsPath, folder, "icon.png"));
 
-    // 40x40 for icon@2x.png
+    // 56x56 for icon@2x.png
     await sharp(Buffer.from(coloredSvg), { density: 300 })
-      .resize(40, 40)
+      .resize(56, 56)
       .png({ compressionLevel: 9 })
       .toFile(join(actionsPath, folder, "icon@2x.png"));
   }
