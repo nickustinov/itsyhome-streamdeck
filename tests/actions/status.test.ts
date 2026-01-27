@@ -11,6 +11,17 @@ vi.mock("../../src/api/itsyhome-client", () => ({
   ItsyhomeClient: vi.fn(),
 }));
 
+vi.mock("../../src/icons", () => ({
+  getDeviceIcon: vi.fn((type: string, isOn: boolean, apiIcon?: string) => {
+    const fallback: Record<string, string> = {
+      "temperature-sensor": "thermometer-simple",
+      "humidity-sensor": "drop",
+    };
+    const icon = apiIcon ?? fallback[type] ?? "question";
+    return `imgs/icons/${icon}-${isOn ? "on" : "off"}.png`;
+  }),
+}));
+
 import { StatusAction } from "../../src/actions/status";
 import { ItsyhomeClient } from "../../src/api/itsyhome-client";
 
@@ -44,7 +55,7 @@ describe("StatusAction", () => {
       await action.onWillAppear(ev as any);
 
       expect(ev.action.setTitle).toHaveBeenCalledWith("22.5°");
-      expect(ev.action.setImage).toHaveBeenCalledWith("imgs/device-types/thermometer-simple-on.png");
+      expect(ev.action.setImage).toHaveBeenCalledWith("imgs/icons/thermometer-simple-on.png");
     });
 
     it("displays humidity for humidity sensor", async () => {
@@ -60,7 +71,7 @@ describe("StatusAction", () => {
       await action.onWillAppear(ev as any);
 
       expect(ev.action.setTitle).toHaveBeenCalledWith("66%");
-      expect(ev.action.setImage).toHaveBeenCalledWith("imgs/device-types/drop-on.png");
+      expect(ev.action.setImage).toHaveBeenCalledWith("imgs/icons/drop-on.png");
     });
 
     it("shows label with value", async () => {

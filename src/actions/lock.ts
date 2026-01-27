@@ -8,25 +8,30 @@ import streamDeck, {
   type KeyAction,
 } from "@elgato/streamdeck";
 import { ItsyhomeClient, type DeviceState } from "../api/itsyhome-client";
+import { getLockIcon } from "../icons";
 
 type LockSettings = {
   target: string;
   port: number;
-  iconStyle?: string;
 };
 
 const POLL_INTERVAL_MS = 3000;
+
+type LockCache = {
+  isLocked: boolean;
+  icon?: string;
+};
 
 @action({ UUID: "com.nickustinov.itsyhome.lock" })
 export class LockAction extends SingletonAction<LockSettings> {
   private client = new ItsyhomeClient();
   private pollTimer: ReturnType<typeof setInterval> | null = null;
   private activeContexts = new Set<string>();
-  private lockedCache = new Map<string, boolean>();
+  private lockCache = new Map<string, LockCache>();
   private optimisticUntil = new Map<string, number>();
 
   override async onWillAppear(ev: WillAppearEvent<LockSettings>): Promise<void> {
-    const { target, port, iconStyle } = ev.payload.settings;
+    const { target, port } = ev.payload.settings;
     this.activeContexts.add(ev.action.id);
 
     if (port) {
@@ -34,7 +39,7 @@ export class LockAction extends SingletonAction<LockSettings> {
     }
 
     if (target) {
-      await this.updateState(ev.action as KeyAction<LockSettings>, target, iconStyle);
+      await this.updateState(ev.action as KeyAction<LockSettings>, target);
     }
 
     this.startPolling();
@@ -48,19 +53,19 @@ export class LockAction extends SingletonAction<LockSettings> {
   }
 
   override async onDidReceiveSettings(ev: DidReceiveSettingsEvent<LockSettings>): Promise<void> {
-    const { target, port, iconStyle } = ev.payload.settings;
+    const { target, port } = ev.payload.settings;
 
     if (port) {
       this.client = new ItsyhomeClient(undefined, port);
     }
 
     if (target) {
-      await this.updateState(ev.action as KeyAction<LockSettings>, target, iconStyle);
+      await this.updateState(ev.action as KeyAction<LockSettings>, target);
     }
   }
 
   override async onKeyDown(ev: KeyDownEvent<LockSettings>): Promise<void> {
-    const { target, iconStyle } = ev.payload.settings;
+    const { target } = ev.payload.settings;
 
     if (!target) {
       await ev.action.showAlert();
@@ -76,11 +81,12 @@ export class LockAction extends SingletonAction<LockSettings> {
       }
 
       // Optimistic update — hold for 30s before allowing poll to overwrite
-      const wasLocked = this.lockedCache.get(target) ?? true;
+      const cached = this.lockCache.get(target);
+      const wasLocked = cached?.isLocked ?? true;
       const nowLocked = !wasLocked;
-      this.lockedCache.set(target, nowLocked);
+      this.lockCache.set(target, { ...cached, isLocked: nowLocked });
       this.optimisticUntil.set(target, Date.now() + 30000);
-      await this.applyVisualState(ev.action as KeyAction<LockSettings>, nowLocked, iconStyle);
+      await this.applyVisualState(ev.action as KeyAction<LockSettings>, nowLocked, cached?.icon);
     } catch (err) {
       streamDeck.logger.error(`Lock toggle error: ${err}`);
       await ev.action.showAlert();
@@ -95,7 +101,7 @@ export class LockAction extends SingletonAction<LockSettings> {
         if (!("setState" in action)) continue;
         const settings = await action.getSettings<LockSettings>();
         if (settings.target) {
-          await this.updateState(action as KeyAction<LockSettings>, settings.target, settings.iconStyle);
+          await this.updateState(action as KeyAction<LockSettings>, settings.target);
         }
       }
     }, POLL_INTERVAL_MS);
@@ -108,7 +114,7 @@ export class LockAction extends SingletonAction<LockSettings> {
     }
   }
 
-  private async updateState(action: KeyAction<LockSettings>, target: string, iconStyle?: string): Promise<void> {
+  private async updateState(action: KeyAction<LockSettings>, target: string): Promise<void> {
     try {
       const holdUntil = this.optimisticUntil.get(target);
       if (holdUntil && Date.now() < holdUntil) return;
@@ -120,16 +126,16 @@ export class LockAction extends SingletonAction<LockSettings> {
 
       const state = device.state as DeviceState | undefined;
       const isLocked = state?.locked ?? true;
-      this.lockedCache.set(target, isLocked);
-      await this.applyVisualState(action, isLocked, iconStyle);
+      const icon = device.icon;
+      this.lockCache.set(target, { isLocked, icon });
+      await this.applyVisualState(action, isLocked, icon);
     } catch {
       // Server might not be running
     }
   }
 
-  private async applyVisualState(action: KeyAction<LockSettings>, isLocked: boolean, iconStyle?: string): Promise<void> {
-    const icon = iconStyle || "lock";
-    await action.setImage(`imgs/device-types/${icon}-${isLocked ? "on" : "off"}.png`);
+  private async applyVisualState(action: KeyAction<LockSettings>, isLocked: boolean, apiIcon?: string): Promise<void> {
+    await action.setImage(getLockIcon(isLocked, apiIcon));
     await action.setState(isLocked ? 1 : 0);
   }
 }

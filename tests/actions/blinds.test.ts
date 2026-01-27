@@ -11,6 +11,13 @@ vi.mock("../../src/api/itsyhome-client", () => ({
   ItsyhomeClient: vi.fn(),
 }));
 
+vi.mock("../../src/icons", () => ({
+  getDeviceIcon: vi.fn((type: string, isOn: boolean, apiIcon?: string) => {
+    const icon = apiIcon ?? (type === "blinds" ? "venetian-mask" : "question");
+    return `imgs/icons/${icon}-${isOn ? "on" : "off"}.png`;
+  }),
+}));
+
 import { BlindsAction } from "../../src/actions/blinds";
 import { ItsyhomeClient } from "../../src/api/itsyhome-client";
 import streamDeck from "@elgato/streamdeck";
@@ -44,7 +51,7 @@ describe("BlindsAction", () => {
 
       await action.onWillAppear(ev as any);
 
-      expect(ev.action.setImage).toHaveBeenCalledWith("imgs/device-types/blinds-open.png");
+      expect(ev.action.setImage).toHaveBeenCalledWith("imgs/icons/venetian-mask-on.png");
       expect(ev.action.setTitle).toHaveBeenCalledWith("75%");
     });
 
@@ -56,7 +63,7 @@ describe("BlindsAction", () => {
 
       await action.onWillAppear(ev as any);
 
-      expect(ev.action.setImage).toHaveBeenCalledWith("imgs/device-types/blinds-close.png");
+      expect(ev.action.setImage).toHaveBeenCalledWith("imgs/icons/venetian-mask-off.png");
     });
 
     it("defaults direction to open", async () => {
@@ -67,7 +74,7 @@ describe("BlindsAction", () => {
 
       await action.onWillAppear(ev as any);
 
-      expect(ev.action.setImage).toHaveBeenCalledWith("imgs/device-types/blinds-open.png");
+      expect(ev.action.setImage).toHaveBeenCalledWith("imgs/icons/venetian-mask-on.png");
     });
 
     it("shows label with position", async () => {
@@ -208,7 +215,7 @@ describe("BlindsAction", () => {
 
       await action.onDidReceiveSettings(ev as any);
 
-      expect(ev.action.setImage).toHaveBeenCalledWith("imgs/device-types/blinds-close.png");
+      expect(ev.action.setImage).toHaveBeenCalledWith("imgs/icons/venetian-mask-off.png");
     });
 
     it("uses custom port", async () => {

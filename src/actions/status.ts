@@ -6,6 +6,7 @@ import {
   WillDisappearEvent,
 } from "@elgato/streamdeck";
 import { ItsyhomeClient, type DeviceState } from "../api/itsyhome-client";
+import { getDeviceIcon } from "../icons";
 
 type StatusSettings = {
   target: string;
@@ -97,8 +98,7 @@ export class StatusAction extends SingletonAction<StatusSettings> {
       const label = settings.label;
       const title = label && value ? `${label}\n${value}` : label || value;
 
-      const icon = device.type === "humidity-sensor" ? "drop" : "thermometer-simple";
-      await action.setImage(`imgs/device-types/${icon}-on.png`);
+      await action.setImage(getDeviceIcon(device.type, true, device.icon));
       await action.setTitle(title);
     } catch {
       // Server might not be running

@@ -1,44 +1,83 @@
 /**
- * Maps device types (as returned by the Itsyhome webhook API) to icon paths.
- * Icons are Phosphor Icons (MIT licensed), bundled as white-on-transparent PNGs.
+ * Icon utilities for Stream Deck buttons.
+ * Icons are Phosphor Icons (MIT licensed), bundled as PNGs.
+ * Uses icons synced from the macOS host app via API.
  */
 
-const DEVICE_TYPE_ICONS: Record<string, string> = {
-  "light": "light",
+/**
+ * Fallback icons when API doesn't return an icon.
+ * Maps device type to Phosphor icon name.
+ */
+const DEVICE_TYPE_FALLBACK: Record<string, string> = {
+  "light": "lightbulb",
   "switch": "switch",
-  "outlet": "outlet",
+  "outlet": "plug",
   "fan": "fan",
-  "thermostat": "thermostat",
-  "heater-cooler": "heater-cooler",
+  "thermostat": "thermometer",
+  "heater-cooler": "thermometer",
   "lock": "lock",
-  "blinds": "blinds",
-  "garage-door": "garage-door",
-  "temperature-sensor": "temperature-sensor",
-  "humidity-sensor": "humidity-sensor",
-  "security-system": "security-system",
+  "blinds": "venetian-mask",
+  "garage-door": "garage",
+  "temperature-sensor": "thermometer-simple",
+  "humidity-sensor": "drop",
+  "security-system": "shield-check",
 };
 
-const DEFAULT_ICON = "light";
+const DEFAULT_ICON = "question";
 
-export function getDeviceIcon(deviceType: string, isOn: boolean): string {
-  const base = DEVICE_TYPE_ICONS[deviceType] ?? DEFAULT_ICON;
+/**
+ * Get icon path from a Phosphor icon name.
+ */
+export function getIconFromName(iconName: string, isOn: boolean): string {
   const state = isOn ? "on" : "off";
-  return `imgs/device-types/${base}-${state}.png`;
+  return `imgs/icons/${iconName}-${state}.png`;
 }
 
-export function getThermostatIcon(deviceType: string, isOn: boolean, mode: string | undefined): string {
-  const base = deviceType === "heater-cooler" ? "heater-cooler" : "thermostat";
-  const isMode = mode === "heat" || mode === "cool" || mode === "auto";
-  if (isOn && isMode) {
-    return `imgs/device-types/${base}-${mode}.png`;
-  }
-  if (!isOn && isMode) {
-    return `imgs/device-types/${base}-${mode}-off.png`;
-  }
-  return `imgs/device-types/${base}-off.png`;
+/**
+ * Get device icon, using API icon if available, otherwise fallback.
+ */
+export function getDeviceIcon(deviceType: string, isOn: boolean, apiIcon?: string): string {
+  const iconName = apiIcon ?? DEVICE_TYPE_FALLBACK[deviceType] ?? DEFAULT_ICON;
+  return getIconFromName(iconName, isOn);
 }
 
-export function getGroupIcon(isOn: boolean): string {
-  const state = isOn ? "on" : "off";
-  return `imgs/device-types/group-${state}.png`;
+/**
+ * Get thermostat/AC icon based on mode.
+ * Falls back to the API icon if available.
+ */
+export function getThermostatIcon(deviceType: string, isOn: boolean, mode: string | undefined, apiIcon?: string): string {
+  const iconName = apiIcon ?? DEVICE_TYPE_FALLBACK[deviceType] ?? "thermometer";
+  return getIconFromName(iconName, isOn);
+}
+
+/**
+ * Get group icon, using API icon if available.
+ */
+export function getGroupIcon(isOn: boolean, apiIcon?: string): string {
+  const iconName = apiIcon ?? "squares-four";
+  return getIconFromName(iconName, isOn);
+}
+
+/**
+ * Get scene icon, using API icon if available.
+ */
+export function getSceneIcon(apiIcon?: string): string {
+  const iconName = apiIcon ?? "sparkle";
+  return getIconFromName(iconName, true);
+}
+
+/**
+ * Get lock icon.
+ */
+export function getLockIcon(isLocked: boolean, apiIcon?: string): string {
+  const iconName = apiIcon ?? "lock";
+  return getIconFromName(iconName, isLocked);
+}
+
+/**
+ * Get garage door icon.
+ */
+export function getGarageDoorIcon(isOpen: boolean, apiIcon?: string): string {
+  const iconName = apiIcon ?? "garage";
+  return getIconFromName(iconName, isOpen);
 }

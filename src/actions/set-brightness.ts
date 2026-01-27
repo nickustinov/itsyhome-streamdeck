@@ -7,13 +7,13 @@ import streamDeck, {
   WillDisappearEvent,
 } from "@elgato/streamdeck";
 import { ItsyhomeClient, type DeviceState } from "../api/itsyhome-client";
+import { getDeviceIcon } from "../icons";
 
 type BrightnessSettings = {
   target: string;
   brightness: number;
   port: number;
   label: string;
-  iconStyle?: string;
 };
 
 const POLL_INTERVAL_MS = 3000;
@@ -119,8 +119,7 @@ export class SetBrightnessAction extends SingletonAction<BrightnessSettings> {
       const label = settings.label;
       const title = label && value ? `${label}\n${value}` : label || value;
 
-      const icon = settings.iconStyle || "light";
-      await action.setImage(`imgs/device-types/${icon}-${isOn ? "on" : "off"}.png`);
+      await action.setImage(getDeviceIcon(device.type, isOn, device.icon));
       await action.setTitle(title);
     } catch {
       const value = `${settings.brightness}%`;

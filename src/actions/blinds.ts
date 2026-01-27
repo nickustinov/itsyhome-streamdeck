@@ -7,6 +7,7 @@ import streamDeck, {
   WillDisappearEvent,
 } from "@elgato/streamdeck";
 import { ItsyhomeClient, type DeviceState } from "../api/itsyhome-client";
+import { getDeviceIcon } from "../icons";
 
 type BlindsSettings = {
   target: string;
@@ -109,9 +110,11 @@ export class BlindsAction extends SingletonAction<BlindsSettings> {
   private async applyDirectionIcon(
     action: { setImage(image: string): Promise<void> },
     settings: BlindsSettings,
+    apiIcon?: string,
   ): Promise<void> {
     const direction = settings.direction || "open";
-    await action.setImage(`imgs/device-types/blinds-${direction}.png`);
+    const isOpen = direction === "open";
+    await action.setImage(getDeviceIcon("blinds", isOpen, apiIcon));
   }
 
   private async updateDisplay(
@@ -127,7 +130,7 @@ export class BlindsAction extends SingletonAction<BlindsSettings> {
       const state = device.state as DeviceState | undefined;
       const position = state?.position;
 
-      await this.applyDirectionIcon(action, settings);
+      await this.applyDirectionIcon(action, settings, device.icon);
       const posStr = position != null ? `${position}%` : "";
       const label = settings.label;
       const title = label && posStr ? `${label}\n${posStr}` : label || posStr;

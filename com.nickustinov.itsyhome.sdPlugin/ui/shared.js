@@ -116,84 +116,8 @@ async function populateSceneSelect(selectElement, port, currentValue) {
   }
 }
 
-// Device cache for auto-selecting icons based on device type
+// Device cache for device lookups
 let cachedDevices = [];
-
-/**
- * Icon picker: define which icons are available per action type.
- */
-const ICON_SETS = {
-  toggle: ["light", "switch", "outlet", "fan", "group", "lightbulb-filament", "lamp", "lamp-pendant", "sun-dim", "television", "speaker-hifi", "house-simple"],
-  scene: ["sparkle", "star", "moon", "moon-stars", "sun", "sun-horizon", "couch", "play", "magic-wand", "bed", "television", "music-notes", "house-simple"],
-  lock: ["lock", "lock-key", "key", "shield-check", "door"],
-  brightness: ["light", "lamp", "lamp-pendant", "sun-dim"],
-  "garage-door": ["garage-door", "garage"],
-};
-
-/**
- * Maps device type (from API) to the default icon style.
- */
-const DEVICE_TYPE_DEFAULT_ICON = {
-  "light": "light",
-  "switch": "switch",
-  "outlet": "outlet",
-  "fan": "fan",
-  "lock": "lock",
-  "temperature-sensor": "thermometer-simple",
-  "humidity-sensor": "drop",
-};
-
-/**
- * Build the icon picker HTML inside a container element.
- * @param {HTMLElement} container - The .icon-picker element
- * @param {string[]} iconList - List of icon names
- */
-function buildIconPicker(container, iconList) {
-  container.innerHTML = "";
-  for (const icon of iconList) {
-    const div = document.createElement("div");
-    div.className = "icon-picker-option";
-    div.dataset.value = icon;
-    const img = document.createElement("img");
-    img.src = `../imgs/device-types/${icon}-on@2x.png`;
-    div.appendChild(img);
-    container.appendChild(div);
-  }
-}
-
-/**
- * Select an icon in the picker by value.
- */
-function selectIcon(container, value) {
-  container.querySelectorAll(".icon-picker-option").forEach(el => {
-    el.classList.toggle("selected", el.dataset.value === value);
-  });
-}
-
-/**
- * Set up click handling on an icon picker.
- * @param {HTMLElement} container - The .icon-picker element
- * @param {function} onSelect - Callback with selected value
- */
-function initIconPicker(container, onSelect) {
-  container.addEventListener("click", (e) => {
-    const option = e.target.closest(".icon-picker-option");
-    if (!option) return;
-    selectIcon(container, option.dataset.value);
-    onSelect(option.dataset.value);
-  });
-}
-
-/**
- * Get the device type for a target value from the cached device list.
- */
-function getDeviceType(targetValue) {
-  for (const device of cachedDevices) {
-    const value = device.room ? `${device.room}/${device.name}` : device.name;
-    if (value === targetValue) return device.type;
-  }
-  return null;
-}
 
 function showConnectionError() {
   const notice = document.getElementById("connection-error");
@@ -203,4 +127,74 @@ function showConnectionError() {
 function hideConnectionError() {
   const notice = document.getElementById("connection-error");
   if (notice) notice.style.display = "none";
+}
+
+/**
+ * Color picker component for icon colors.
+ * Creates a row of preset color swatches with an optional custom color input.
+ */
+const COLOR_PRESETS = [
+  { name: "White", value: "#ffffff" },
+  { name: "Gray", value: "#8e8e93" },
+  { name: "Red", value: "#ff3b30" },
+  { name: "Orange", value: "#ff9500" },
+  { name: "Yellow", value: "#ffcc00" },
+  { name: "Lime", value: "#32d74b" },
+  { name: "Teal", value: "#30b0c7" },
+  { name: "Blue", value: "#007aff" },
+  { name: "Indigo", value: "#5856d6" },
+  { name: "Purple", value: "#af52de" },
+  { name: "Pink", value: "#ff2d55" },
+  { name: "Brown", value: "#a2845e" },
+];
+
+/**
+ * Initialize a color picker component.
+ * @param {string} containerId - ID of the container element
+ * @param {string} settingKey - Settings key to save the color to (e.g. "onColor")
+ * @param {string} defaultColor - Default color if none set
+ * @param {function} onSave - Callback to save settings
+ * @param {function} getSettings - Callback to get current settings
+ */
+function initColorPicker(containerId, settingKey, defaultColor, onSave, getSettings) {
+  const container = document.getElementById(containerId);
+  if (!container) return;
+
+  // Create swatches
+  const swatchesDiv = document.createElement("div");
+  swatchesDiv.className = "color-swatches";
+
+  for (const preset of COLOR_PRESETS) {
+    const swatch = document.createElement("button");
+    swatch.className = "color-swatch";
+    swatch.style.backgroundColor = preset.value;
+    swatch.title = preset.name;
+    swatch.dataset.color = preset.value;
+    swatch.addEventListener("click", () => selectColor(preset.value));
+    swatchesDiv.appendChild(swatch);
+  }
+
+  container.appendChild(swatchesDiv);
+
+  function selectColor(color) {
+    // Update UI
+    swatchesDiv.querySelectorAll(".color-swatch").forEach(s => {
+      s.classList.toggle("selected", s.dataset.color.toLowerCase() === color.toLowerCase());
+    });
+
+    // Save
+    onSave({ [settingKey]: color });
+  }
+
+  // Set initial value
+  function setInitialValue() {
+    const settings = getSettings();
+    const color = settings[settingKey] || defaultColor;
+    swatchesDiv.querySelectorAll(".color-swatch").forEach(s => {
+      s.classList.toggle("selected", s.dataset.color.toLowerCase() === color.toLowerCase());
+    });
+  }
+
+  // Return function to update when settings load
+  return { setInitialValue };
 }

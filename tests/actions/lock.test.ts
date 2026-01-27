@@ -11,6 +11,10 @@ vi.mock("../../src/api/itsyhome-client", () => ({
   ItsyhomeClient: vi.fn(),
 }));
 
+vi.mock("../../src/icons", () => ({
+  getLockIcon: vi.fn((isLocked: boolean, apiIcon?: string) => `imgs/icons/${apiIcon ?? "lock"}-${isLocked ? "on" : "off"}.png`),
+}));
+
 import { LockAction } from "../../src/actions/lock";
 import { ItsyhomeClient } from "../../src/api/itsyhome-client";
 import streamDeck from "@elgato/streamdeck";
@@ -39,12 +43,12 @@ describe("LockAction", () => {
 
       const ev = {
         action: createMockAction(),
-        payload: { settings: { target: "Front Door", port: 0, iconStyle: "" } },
+        payload: { settings: { target: "Front Door", port: 0 } },
       };
 
       await action.onWillAppear(ev as any);
 
-      expect(ev.action.setImage).toHaveBeenCalledWith("imgs/device-types/lock-on.png");
+      expect(ev.action.setImage).toHaveBeenCalledWith("imgs/icons/lock-on.png");
       expect(ev.action.setState).toHaveBeenCalledWith(1);
     });
 
@@ -55,28 +59,28 @@ describe("LockAction", () => {
 
       const ev = {
         action: createMockAction(),
-        payload: { settings: { target: "Front Door", port: 0, iconStyle: "" } },
+        payload: { settings: { target: "Front Door", port: 0 } },
       };
 
       await action.onWillAppear(ev as any);
 
-      expect(ev.action.setImage).toHaveBeenCalledWith("imgs/device-types/lock-off.png");
+      expect(ev.action.setImage).toHaveBeenCalledWith("imgs/icons/lock-off.png");
       expect(ev.action.setState).toHaveBeenCalledWith(0);
     });
 
-    it("uses custom iconStyle", async () => {
+    it("uses icon from API response", async () => {
       mockClient.getDeviceInfo.mockResolvedValue({
-        name: "Front Door", type: "lock", reachable: true, state: { locked: true },
+        name: "Front Door", type: "lock", icon: "shield", reachable: true, state: { locked: true },
       });
 
       const ev = {
         action: createMockAction(),
-        payload: { settings: { target: "Front Door", port: 0, iconStyle: "shield" } },
+        payload: { settings: { target: "Front Door", port: 0 } },
       };
 
       await action.onWillAppear(ev as any);
 
-      expect(ev.action.setImage).toHaveBeenCalledWith("imgs/device-types/shield-on.png");
+      expect(ev.action.setImage).toHaveBeenCalledWith("imgs/icons/shield-on.png");
     });
 
     it("uses custom port", async () => {
@@ -86,7 +90,7 @@ describe("LockAction", () => {
 
       const ev = {
         action: createMockAction(),
-        payload: { settings: { target: "Lock", port: 5555, iconStyle: "" } },
+        payload: { settings: { target: "Lock", port: 5555 } },
       };
 
       await action.onWillAppear(ev as any);
@@ -97,7 +101,7 @@ describe("LockAction", () => {
     it("does nothing when target is empty", async () => {
       const ev = {
         action: createMockAction(),
-        payload: { settings: { target: "", port: 0, iconStyle: "" } },
+        payload: { settings: { target: "", port: 0 } },
       };
 
       await action.onWillAppear(ev as any);
@@ -112,7 +116,7 @@ describe("LockAction", () => {
 
       const ev = {
         action: createMockAction(),
-        payload: { settings: { target: "Lock", port: 0, iconStyle: "" } },
+        payload: { settings: { target: "Lock", port: 0 } },
       };
 
       await action.onWillAppear(ev as any);
@@ -127,7 +131,7 @@ describe("LockAction", () => {
 
       const ev = {
         action: createMockAction(),
-        payload: { settings: { target: "Lock", port: 0, iconStyle: "" } },
+        payload: { settings: { target: "Lock", port: 0 } },
       };
 
       await action.onWillAppear(ev as any);
@@ -140,7 +144,7 @@ describe("LockAction", () => {
 
       const ev = {
         action: createMockAction(),
-        payload: { settings: { target: "Lock", port: 0, iconStyle: "" } },
+        payload: { settings: { target: "Lock", port: 0 } },
       };
 
       await action.onWillAppear(ev as any);
@@ -153,7 +157,7 @@ describe("LockAction", () => {
 
       const ev = {
         action: createMockAction(),
-        payload: { settings: { target: "Lock", port: 0, iconStyle: "" } },
+        payload: { settings: { target: "Lock", port: 0 } },
       };
 
       await action.onWillAppear(ev as any);
@@ -166,7 +170,7 @@ describe("LockAction", () => {
     it("stops polling when last context disappears", async () => {
       const ev = {
         action: { ...createMockAction(), id: "ctx-1" },
-        payload: { settings: { target: "", port: 0, iconStyle: "" } },
+        payload: { settings: { target: "", port: 0 } },
       };
 
       await action.onWillAppear(ev as any);
@@ -182,7 +186,7 @@ describe("LockAction", () => {
 
       const ev = {
         action: createMockAction(),
-        payload: { settings: { target: "Lock", port: 0, iconStyle: "" } },
+        payload: { settings: { target: "Lock", port: 0 } },
       };
 
       await action.onDidReceiveSettings(ev as any);
@@ -197,7 +201,7 @@ describe("LockAction", () => {
 
       const ev = {
         action: createMockAction(),
-        payload: { settings: { target: "Lock", port: 3333, iconStyle: "" } },
+        payload: { settings: { target: "Lock", port: 3333 } },
       };
 
       await action.onDidReceiveSettings(ev as any);
@@ -208,7 +212,7 @@ describe("LockAction", () => {
     it("does nothing when target is empty", async () => {
       const ev = {
         action: createMockAction(),
-        payload: { settings: { target: "", port: 0, iconStyle: "" } },
+        payload: { settings: { target: "", port: 0 } },
       };
 
       await action.onDidReceiveSettings(ev as any);
@@ -221,7 +225,7 @@ describe("LockAction", () => {
     it("shows alert when no target", async () => {
       const ev = {
         action: createMockAction(),
-        payload: { settings: { target: "", port: 0, iconStyle: "" } },
+        payload: { settings: { target: "", port: 0 } },
       };
 
       await action.onKeyDown(ev as any);
@@ -238,7 +242,7 @@ describe("LockAction", () => {
       const mockAction = createMockAction();
       const ev = {
         action: mockAction,
-        payload: { settings: { target: "Lock", port: 0, iconStyle: "" } },
+        payload: { settings: { target: "Lock", port: 0 } },
       };
 
       await action.onWillAppear(ev as any);
@@ -251,7 +255,7 @@ describe("LockAction", () => {
       await action.onKeyDown(ev as any);
 
       expect(mockClient.toggle).toHaveBeenCalledWith("Lock");
-      expect(mockAction.setImage).toHaveBeenCalledWith("imgs/device-types/lock-off.png");
+      expect(mockAction.setImage).toHaveBeenCalledWith("imgs/icons/lock-off.png");
       expect(mockAction.setState).toHaveBeenCalledWith(0);
     });
 
@@ -263,7 +267,7 @@ describe("LockAction", () => {
       const mockAction = { ...createMockAction(), id: "ctx-1" };
       const ev = {
         action: mockAction,
-        payload: { settings: { target: "Lock", port: 0, iconStyle: "" } },
+        payload: { settings: { target: "Lock", port: 0 } },
       };
 
       await action.onWillAppear(ev as any);
@@ -277,7 +281,7 @@ describe("LockAction", () => {
       const pollAction = {
         ...createMockAction(),
         setState: vi.fn(),
-        getSettings: vi.fn().mockResolvedValue({ target: "Lock", iconStyle: "" }),
+        getSettings: vi.fn().mockResolvedValue({ target: "Lock" }),
       };
       Object.defineProperty(action, "actions", {
         get: () => [pollAction],
@@ -301,7 +305,7 @@ describe("LockAction", () => {
       const mockAction = { ...createMockAction(), id: "ctx-1" };
       const ev = {
         action: mockAction,
-        payload: { settings: { target: "Lock", port: 0, iconStyle: "" } },
+        payload: { settings: { target: "Lock", port: 0 } },
       };
 
       await action.onWillAppear(ev as any);
@@ -315,7 +319,7 @@ describe("LockAction", () => {
       const pollAction = {
         ...createMockAction(),
         setState: vi.fn(),
-        getSettings: vi.fn().mockResolvedValue({ target: "Lock", iconStyle: "" }),
+        getSettings: vi.fn().mockResolvedValue({ target: "Lock" }),
       };
       Object.defineProperty(action, "actions", {
         get: () => [pollAction],
@@ -340,13 +344,13 @@ describe("LockAction", () => {
 
       const ev = {
         action: createMockAction(),
-        payload: { settings: { target: "NewLock", port: 0, iconStyle: "" } },
+        payload: { settings: { target: "NewLock", port: 0 } },
       };
 
       await action.onKeyDown(ev as any);
 
       // wasLocked defaults to true, so nowLocked = false
-      expect(ev.action.setImage).toHaveBeenCalledWith("imgs/device-types/lock-off.png");
+      expect(ev.action.setImage).toHaveBeenCalledWith("imgs/icons/lock-off.png");
       expect(ev.action.setState).toHaveBeenCalledWith(0);
     });
 
@@ -355,7 +359,7 @@ describe("LockAction", () => {
 
       const ev = {
         action: createMockAction(),
-        payload: { settings: { target: "Lock", port: 0, iconStyle: "" } },
+        payload: { settings: { target: "Lock", port: 0 } },
       };
 
       await action.onKeyDown(ev as any);
@@ -369,7 +373,7 @@ describe("LockAction", () => {
 
       const ev = {
         action: createMockAction(),
-        payload: { settings: { target: "Lock", port: 0, iconStyle: "" } },
+        payload: { settings: { target: "Lock", port: 0 } },
       };
 
       await action.onKeyDown(ev as any);
@@ -383,11 +387,11 @@ describe("LockAction", () => {
     it("does not start duplicate timers", async () => {
       const ev1 = {
         action: { ...createMockAction(), id: "ctx-1" },
-        payload: { settings: { target: "", port: 0, iconStyle: "" } },
+        payload: { settings: { target: "", port: 0 } },
       };
       const ev2 = {
         action: { ...createMockAction(), id: "ctx-2" },
-        payload: { settings: { target: "", port: 0, iconStyle: "" } },
+        payload: { settings: { target: "", port: 0 } },
       };
 
       await action.onWillAppear(ev1 as any);
@@ -398,7 +402,7 @@ describe("LockAction", () => {
       const pollAction = {
         ...createMockAction(),
         setState: vi.fn(),
-        getSettings: vi.fn().mockResolvedValue({ target: "Lock", iconStyle: "" }),
+        getSettings: vi.fn().mockResolvedValue({ target: "Lock" }),
       };
       mockClient.getDeviceInfo.mockResolvedValue({
         name: "Lock", type: "lock", reachable: true, state: { locked: true },
@@ -411,7 +415,7 @@ describe("LockAction", () => {
 
       const ev = {
         action: createMockAction(),
-        payload: { settings: { target: "", port: 0, iconStyle: "" } },
+        payload: { settings: { target: "", port: 0 } },
       };
 
       await action.onWillAppear(ev as any);
@@ -435,7 +439,7 @@ describe("LockAction", () => {
 
       const ev = {
         action: createMockAction(),
-        payload: { settings: { target: "", port: 0, iconStyle: "" } },
+        payload: { settings: { target: "", port: 0 } },
       };
 
       await action.onWillAppear(ev as any);
@@ -449,7 +453,7 @@ describe("LockAction", () => {
       const pollAction = {
         ...createMockAction(),
         setState: vi.fn(),
-        getSettings: vi.fn().mockResolvedValue({ target: "", iconStyle: "" }),
+        getSettings: vi.fn().mockResolvedValue({ target: "" }),
       };
       Object.defineProperty(action, "actions", {
         get: () => [pollAction],
@@ -458,7 +462,7 @@ describe("LockAction", () => {
 
       const ev = {
         action: createMockAction(),
-        payload: { settings: { target: "", port: 0, iconStyle: "" } },
+        payload: { settings: { target: "", port: 0 } },
       };
 
       await action.onWillAppear(ev as any);

@@ -11,6 +11,13 @@ vi.mock("../../src/api/itsyhome-client", () => ({
   ItsyhomeClient: vi.fn(),
 }));
 
+vi.mock("../../src/icons", () => ({
+  getDeviceIcon: vi.fn((type: string, isOn: boolean, apiIcon?: string) => {
+    const icon = apiIcon ?? (type === "light" ? "lightbulb" : type);
+    return `imgs/icons/${icon}-${isOn ? "on" : "off"}.png`;
+  }),
+}));
+
 import { SetBrightnessAction } from "../../src/actions/set-brightness";
 import { ItsyhomeClient } from "../../src/api/itsyhome-client";
 import streamDeck from "@elgato/streamdeck";
@@ -39,7 +46,7 @@ describe("SetBrightnessAction", () => {
 
       const ev = {
         action: createMockAction(),
-        payload: { settings: { target: "Lamp", brightness: 50, port: 0, label: "", iconStyle: "" } },
+        payload: { settings: { target: "Lamp", brightness: 50, port: 0, label: "" } },
       };
 
       await action.onWillAppear(ev as any);
@@ -54,7 +61,7 @@ describe("SetBrightnessAction", () => {
 
       const ev = {
         action: createMockAction(),
-        payload: { settings: { target: "Lamp", brightness: 50, port: 0, label: "Desk", iconStyle: "" } },
+        payload: { settings: { target: "Lamp", brightness: 50, port: 0, label: "Desk" } },
       };
 
       await action.onWillAppear(ev as any);
@@ -69,7 +76,7 @@ describe("SetBrightnessAction", () => {
 
       const ev = {
         action: createMockAction(),
-        payload: { settings: { target: "Lamp", brightness: 40, port: 0, label: "", iconStyle: "" } },
+        payload: { settings: { target: "Lamp", brightness: 40, port: 0, label: "" } },
       };
 
       await action.onWillAppear(ev as any);
@@ -84,27 +91,12 @@ describe("SetBrightnessAction", () => {
 
       const ev = {
         action: createMockAction(),
-        payload: { settings: { target: "Lamp", brightness: 50, port: 0, label: "", iconStyle: "" } },
+        payload: { settings: { target: "Lamp", brightness: 50, port: 0, label: "" } },
       };
 
       await action.onWillAppear(ev as any);
 
-      expect(ev.action.setImage).toHaveBeenCalledWith("imgs/device-types/light-on.png");
-    });
-
-    it("uses iconStyle when provided", async () => {
-      mockClient.getDeviceInfo.mockResolvedValue({
-        name: "Lamp", type: "light", reachable: true, state: { on: false, brightness: 0 },
-      });
-
-      const ev = {
-        action: createMockAction(),
-        payload: { settings: { target: "Lamp", brightness: 50, port: 0, label: "", iconStyle: "fan" } },
-      };
-
-      await action.onWillAppear(ev as any);
-
-      expect(ev.action.setImage).toHaveBeenCalledWith("imgs/device-types/fan-off.png");
+      expect(ev.action.setImage).toHaveBeenCalledWith("imgs/icons/lightbulb-on.png");
     });
 
     it("infers on state from brightness when on is undefined", async () => {
@@ -114,12 +106,12 @@ describe("SetBrightnessAction", () => {
 
       const ev = {
         action: createMockAction(),
-        payload: { settings: { target: "Lamp", brightness: 50, port: 0, label: "", iconStyle: "" } },
+        payload: { settings: { target: "Lamp", brightness: 50, port: 0, label: "" } },
       };
 
       await action.onWillAppear(ev as any);
 
-      expect(ev.action.setImage).toHaveBeenCalledWith("imgs/device-types/light-on.png");
+      expect(ev.action.setImage).toHaveBeenCalledWith("imgs/icons/lightbulb-on.png");
     });
 
     it("uses custom port", async () => {
@@ -129,7 +121,7 @@ describe("SetBrightnessAction", () => {
 
       const ev = {
         action: createMockAction(),
-        payload: { settings: { target: "Lamp", brightness: 50, port: 8888, label: "", iconStyle: "" } },
+        payload: { settings: { target: "Lamp", brightness: 50, port: 8888, label: "" } },
       };
 
       await action.onWillAppear(ev as any);
@@ -140,7 +132,7 @@ describe("SetBrightnessAction", () => {
     it("does nothing when target is empty", async () => {
       const ev = {
         action: createMockAction(),
-        payload: { settings: { target: "", brightness: 50, port: 0, label: "", iconStyle: "" } },
+        payload: { settings: { target: "", brightness: 50, port: 0, label: "" } },
       };
 
       await action.onWillAppear(ev as any);
@@ -155,7 +147,7 @@ describe("SetBrightnessAction", () => {
 
       const ev = {
         action: createMockAction(),
-        payload: { settings: { target: "Lamp", brightness: 50, port: 0, label: "", iconStyle: "" } },
+        payload: { settings: { target: "Lamp", brightness: 50, port: 0, label: "" } },
       };
 
       await action.onWillAppear(ev as any);
@@ -168,7 +160,7 @@ describe("SetBrightnessAction", () => {
 
       const ev = {
         action: createMockAction(),
-        payload: { settings: { target: "Lamp", brightness: 50, port: 0, label: "", iconStyle: "" } },
+        payload: { settings: { target: "Lamp", brightness: 50, port: 0, label: "" } },
       };
 
       await action.onWillAppear(ev as any);
@@ -181,7 +173,7 @@ describe("SetBrightnessAction", () => {
 
       const ev = {
         action: createMockAction(),
-        payload: { settings: { target: "Lamp", brightness: 30, port: 0, label: "Test", iconStyle: "" } },
+        payload: { settings: { target: "Lamp", brightness: 30, port: 0, label: "Test" } },
       };
 
       await action.onWillAppear(ev as any);
@@ -194,7 +186,7 @@ describe("SetBrightnessAction", () => {
 
       const ev = {
         action: createMockAction(),
-        payload: { settings: { target: "Lamp", brightness: 55, port: 0, label: "", iconStyle: "" } },
+        payload: { settings: { target: "Lamp", brightness: 55, port: 0, label: "" } },
       };
 
       await action.onWillAppear(ev as any);
@@ -207,7 +199,7 @@ describe("SetBrightnessAction", () => {
     it("stops polling when last context disappears", async () => {
       const ev = {
         action: { ...createMockAction(), id: "ctx-1" },
-        payload: { settings: { target: "", brightness: 50, port: 0, label: "", iconStyle: "" } },
+        payload: { settings: { target: "", brightness: 50, port: 0, label: "" } },
       };
 
       await action.onWillAppear(ev as any);
@@ -223,7 +215,7 @@ describe("SetBrightnessAction", () => {
 
       const ev = {
         action: createMockAction(),
-        payload: { settings: { target: "Lamp", brightness: 50, port: 0, label: "", iconStyle: "" } },
+        payload: { settings: { target: "Lamp", brightness: 50, port: 0, label: "" } },
       };
 
       await action.onDidReceiveSettings(ev as any);
@@ -238,7 +230,7 @@ describe("SetBrightnessAction", () => {
 
       const ev = {
         action: createMockAction(),
-        payload: { settings: { target: "Lamp", brightness: 50, port: 7777, label: "", iconStyle: "" } },
+        payload: { settings: { target: "Lamp", brightness: 50, port: 7777, label: "" } },
       };
 
       await action.onDidReceiveSettings(ev as any);
@@ -249,7 +241,7 @@ describe("SetBrightnessAction", () => {
     it("does nothing when target is empty", async () => {
       const ev = {
         action: createMockAction(),
-        payload: { settings: { target: "", brightness: 50, port: 0, label: "", iconStyle: "" } },
+        payload: { settings: { target: "", brightness: 50, port: 0, label: "" } },
       };
 
       await action.onDidReceiveSettings(ev as any);
@@ -262,7 +254,7 @@ describe("SetBrightnessAction", () => {
     it("shows alert when no target", async () => {
       const ev = {
         action: createMockAction(),
-        payload: { settings: { target: "", brightness: 50, port: 0, label: "", iconStyle: "" } },
+        payload: { settings: { target: "", brightness: 50, port: 0, label: "" } },
       };
 
       await action.onKeyDown(ev as any);
@@ -273,7 +265,7 @@ describe("SetBrightnessAction", () => {
     it("shows alert when brightness is null", async () => {
       const ev = {
         action: createMockAction(),
-        payload: { settings: { target: "Lamp", brightness: null, port: 0, label: "", iconStyle: "" } },
+        payload: { settings: { target: "Lamp", brightness: null, port: 0, label: "" } },
       };
 
       await action.onKeyDown(ev as any);
@@ -289,7 +281,7 @@ describe("SetBrightnessAction", () => {
 
       const ev = {
         action: createMockAction(),
-        payload: { settings: { target: "Lamp", brightness: 75, port: 0, label: "", iconStyle: "" } },
+        payload: { settings: { target: "Lamp", brightness: 75, port: 0, label: "" } },
       };
 
       await action.onKeyDown(ev as any);
@@ -303,7 +295,7 @@ describe("SetBrightnessAction", () => {
 
       const ev = {
         action: createMockAction(),
-        payload: { settings: { target: "Lamp", brightness: 50, port: 0, label: "", iconStyle: "" } },
+        payload: { settings: { target: "Lamp", brightness: 50, port: 0, label: "" } },
       };
 
       await action.onKeyDown(ev as any);
@@ -317,7 +309,7 @@ describe("SetBrightnessAction", () => {
 
       const ev = {
         action: createMockAction(),
-        payload: { settings: { target: "Lamp", brightness: 50, port: 0, label: "", iconStyle: "" } },
+        payload: { settings: { target: "Lamp", brightness: 50, port: 0, label: "" } },
       };
 
       await action.onKeyDown(ev as any);
@@ -331,11 +323,11 @@ describe("SetBrightnessAction", () => {
     it("does not start duplicate timers", async () => {
       const ev1 = {
         action: { ...createMockAction(), id: "ctx-1" },
-        payload: { settings: { target: "", brightness: 50, port: 0, label: "", iconStyle: "" } },
+        payload: { settings: { target: "", brightness: 50, port: 0, label: "" } },
       };
       const ev2 = {
         action: { ...createMockAction(), id: "ctx-2" },
-        payload: { settings: { target: "", brightness: 50, port: 0, label: "", iconStyle: "" } },
+        payload: { settings: { target: "", brightness: 50, port: 0, label: "" } },
       };
 
       await action.onWillAppear(ev1 as any);
@@ -344,7 +336,7 @@ describe("SetBrightnessAction", () => {
 
     it("polls all actions at 3s intervals", async () => {
       const mockAction = createMockAction();
-      mockAction.getSettings.mockResolvedValue({ target: "Lamp", brightness: 50, label: "", iconStyle: "" });
+      mockAction.getSettings.mockResolvedValue({ target: "Lamp", brightness: 50, label: "" });
       mockClient.getDeviceInfo.mockResolvedValue({
         name: "Lamp", type: "light", reachable: true, state: { on: true, brightness: 50 },
       });
@@ -355,7 +347,7 @@ describe("SetBrightnessAction", () => {
 
       const ev = {
         action: createMockAction(),
-        payload: { settings: { target: "", brightness: 50, port: 0, label: "", iconStyle: "" } },
+        payload: { settings: { target: "", brightness: 50, port: 0, label: "" } },
       };
 
       await action.onWillAppear(ev as any);
@@ -372,7 +364,7 @@ describe("SetBrightnessAction", () => {
 
     it("skips actions with no target during poll", async () => {
       const mockAction = createMockAction();
-      mockAction.getSettings.mockResolvedValue({ target: "", brightness: 50, label: "", iconStyle: "" });
+      mockAction.getSettings.mockResolvedValue({ target: "", brightness: 50, label: "" });
 
       Object.defineProperty(action, "actions", {
         get: () => [mockAction],
@@ -380,7 +372,7 @@ describe("SetBrightnessAction", () => {
 
       const ev = {
         action: createMockAction(),
-        payload: { settings: { target: "", brightness: 50, port: 0, label: "", iconStyle: "" } },
+        payload: { settings: { target: "", brightness: 50, port: 0, label: "" } },
       };
 
       await action.onWillAppear(ev as any);
@@ -399,7 +391,7 @@ describe("SetBrightnessAction", () => {
 
       const ev = {
         action: createMockAction(),
-        payload: { settings: { target: "Lamp", brightness: undefined as any, port: 0, label: "Desk", iconStyle: "" } },
+        payload: { settings: { target: "Lamp", brightness: undefined as any, port: 0, label: "Desk" } },
       };
 
       await action.onWillAppear(ev as any);

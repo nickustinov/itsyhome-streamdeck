@@ -17,11 +17,6 @@
     </div>
 
     <div class="sdpi-item">
-      <label class="sdpi-item-label">Icon</label>
-      <div class="icon-picker" id="icon-picker"></div>
-    </div>
-
-    <div class="sdpi-item">
       <label class="sdpi-item-label">Port</label>
       <input type="number" id="port" placeholder="8423" min="1" max="65535" />
     </div>
@@ -39,29 +34,17 @@
   <script src="shared.js"></script>
   <script>
     const targetSelect = document.getElementById("target");
-    const iconPicker = document.getElementById("icon-picker");
     const portInput = document.getElementById("port");
     const refreshBtn = document.getElementById("refresh");
 
-    buildIconPicker(iconPicker, ICON_SETS.toggle);
-    initIconPicker(iconPicker, (value) => saveSettings({ iconStyle: value }));
-
     function onSettingsLoaded(settings) {
       portInput.value = settings.port || "";
-      selectIcon(iconPicker, settings.iconStyle || "light");
       hideConnectionError();
       populateTargetSelect(targetSelect, settings.port, settings.target);
     }
 
     targetSelect.addEventListener("change", () => {
-      const target = targetSelect.value;
-      saveSettings({ target });
-      const deviceType = getDeviceType(target);
-      if (deviceType) {
-        const icon = DEVICE_TYPE_DEFAULT_ICON[deviceType] || "light";
-        selectIcon(iconPicker, icon);
-        saveSettings({ iconStyle: icon });
-      }
+      saveSettings({ target: targetSelect.value });
     });
 
     portInput.addEventListener("change", () => {

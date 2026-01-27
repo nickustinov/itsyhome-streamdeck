@@ -11,9 +11,11 @@ vi.mock("../../src/api/itsyhome-client", () => ({
   ItsyhomeClient: vi.fn(),
 }));
 
-vi.mock("../../src/icons", () => ({
-  getDeviceIcon: vi.fn((type: string, isOn: boolean) => `imgs/device-types/${type}-${isOn ? "on" : "off"}.png`),
-  getGroupIcon: vi.fn((isOn: boolean) => `imgs/device-types/group-${isOn ? "on" : "off"}.png`),
+vi.mock("../../src/icon-renderer", () => ({
+  renderIcon: vi.fn((iconName: string, color: string, useFill: boolean) => {
+    const state = useFill ? "on" : "off";
+    return Promise.resolve(`data:image/png;base64,mock-${iconName}-${state}`);
+  }),
 }));
 
 import { ToggleDeviceAction } from "../../src/actions/toggle-device";
@@ -44,12 +46,12 @@ describe("ToggleDeviceAction", () => {
 
       const ev = {
         action: createMockAction(),
-        payload: { settings: { target: "Office/Lamp", port: 0, iconStyle: "" } },
+        payload: { settings: { target: "Office/Lamp", port: 0 } },
       };
 
       await action.onWillAppear(ev as any);
 
-      expect(ev.action.setImage).toHaveBeenCalledWith("imgs/device-types/light-on.png");
+      expect(ev.action.setImage).toHaveBeenCalledWith("data:image/png;base64,mock-lightbulb-on");
       expect(ev.action.setState).toHaveBeenCalledWith(1);
     });
 
@@ -60,7 +62,7 @@ describe("ToggleDeviceAction", () => {
 
       const ev = {
         action: createMockAction(),
-        payload: { settings: { target: "Lamp", port: 9999, iconStyle: "" } },
+        payload: { settings: { target: "Lamp", port: 9999 } },
       };
 
       await action.onWillAppear(ev as any);
@@ -71,7 +73,7 @@ describe("ToggleDeviceAction", () => {
     it("does nothing when target is empty", async () => {
       const ev = {
         action: createMockAction(),
-        payload: { settings: { target: "", port: 0, iconStyle: "" } },
+        payload: { settings: { target: "", port: 0 } },
       };
 
       await action.onWillAppear(ev as any);
@@ -79,34 +81,34 @@ describe("ToggleDeviceAction", () => {
       expect(mockClient.getDeviceInfo).not.toHaveBeenCalled();
     });
 
-    it("uses iconStyle when provided", async () => {
+    it("uses API icon when provided", async () => {
       mockClient.getDeviceInfo.mockResolvedValue({
-        name: "Lamp", type: "light", reachable: true, state: { on: true },
+        name: "Lamp", type: "light", icon: "lamp", reachable: true, state: { on: true },
       });
 
       const ev = {
         action: createMockAction(),
-        payload: { settings: { target: "Lamp", port: 0, iconStyle: "fan" } },
+        payload: { settings: { target: "Lamp", port: 0 } },
       };
 
       await action.onWillAppear(ev as any);
 
-      expect(ev.action.setImage).toHaveBeenCalledWith("imgs/device-types/fan-on.png");
+      expect(ev.action.setImage).toHaveBeenCalledWith("data:image/png;base64,mock-lamp-on");
     });
 
     it("uses group icon when target starts with group.", async () => {
       mockClient.getDeviceInfo.mockResolvedValue({
-        name: "All Lights", type: "light", reachable: true, state: { on: true },
+        name: "All Lights", type: "light", icon: "squares-four", reachable: true, state: { on: true },
       });
 
       const ev = {
         action: createMockAction(),
-        payload: { settings: { target: "group.All Lights", port: 0, iconStyle: "" } },
+        payload: { settings: { target: "group.All Lights", port: 0 } },
       };
 
       await action.onWillAppear(ev as any);
 
-      expect(ev.action.setImage).toHaveBeenCalledWith("imgs/device-types/group-on.png");
+      expect(ev.action.setImage).toHaveBeenCalledWith("data:image/png;base64,mock-squares-four-on");
     });
 
     it("handles array response from getDeviceInfo", async () => {
@@ -116,12 +118,12 @@ describe("ToggleDeviceAction", () => {
 
       const ev = {
         action: createMockAction(),
-        payload: { settings: { target: "Lamp", port: 0, iconStyle: "" } },
+        payload: { settings: { target: "Lamp", port: 0 } },
       };
 
       await action.onWillAppear(ev as any);
 
-      expect(ev.action.setImage).toHaveBeenCalledWith("imgs/device-types/light-off.png");
+      expect(ev.action.setImage).toHaveBeenCalledWith("data:image/png;base64,mock-lightbulb-off");
       expect(ev.action.setState).toHaveBeenCalledWith(0);
     });
 
@@ -130,7 +132,7 @@ describe("ToggleDeviceAction", () => {
 
       const ev = {
         action: createMockAction(),
-        payload: { settings: { target: "Lamp", port: 0, iconStyle: "" } },
+        payload: { settings: { target: "Lamp", port: 0 } },
       };
 
       await action.onWillAppear(ev as any);
@@ -143,7 +145,7 @@ describe("ToggleDeviceAction", () => {
 
       const ev = {
         action: createMockAction(),
-        payload: { settings: { target: "Lamp", port: 0, iconStyle: "" } },
+        payload: { settings: { target: "Lamp", port: 0 } },
       };
 
       await action.onWillAppear(ev as any);
@@ -156,11 +158,11 @@ describe("ToggleDeviceAction", () => {
     it("stops polling when last context disappears", async () => {
       const ev1 = {
         action: { ...createMockAction(), id: "ctx-1" },
-        payload: { settings: { target: "", port: 0, iconStyle: "" } },
+        payload: { settings: { target: "", port: 0 } },
       };
       const ev2 = {
         action: { ...createMockAction(), id: "ctx-2" },
-        payload: { settings: { target: "", port: 0, iconStyle: "" } },
+        payload: { settings: { target: "", port: 0 } },
       };
 
       await action.onWillAppear(ev1 as any);
@@ -182,12 +184,12 @@ describe("ToggleDeviceAction", () => {
 
       const ev = {
         action: createMockAction(),
-        payload: { settings: { target: "Fan", port: 0, iconStyle: "" } },
+        payload: { settings: { target: "Fan", port: 0 } },
       };
 
       await action.onDidReceiveSettings(ev as any);
 
-      expect(ev.action.setImage).toHaveBeenCalledWith("imgs/device-types/fan-on.png");
+      expect(ev.action.setImage).toHaveBeenCalledWith("data:image/png;base64,mock-fan-on");
     });
 
     it("uses custom port", async () => {
@@ -197,7 +199,7 @@ describe("ToggleDeviceAction", () => {
 
       const ev = {
         action: createMockAction(),
-        payload: { settings: { target: "Fan", port: 1234, iconStyle: "" } },
+        payload: { settings: { target: "Fan", port: 1234 } },
       };
 
       await action.onDidReceiveSettings(ev as any);
@@ -208,7 +210,7 @@ describe("ToggleDeviceAction", () => {
     it("does nothing when target is empty", async () => {
       const ev = {
         action: createMockAction(),
-        payload: { settings: { target: "", port: 0, iconStyle: "" } },
+        payload: { settings: { target: "", port: 0 } },
       };
 
       await action.onDidReceiveSettings(ev as any);
@@ -221,7 +223,7 @@ describe("ToggleDeviceAction", () => {
     it("shows alert when no target", async () => {
       const ev = {
         action: createMockAction(),
-        payload: { settings: { target: "", port: 0, iconStyle: "" } },
+        payload: { settings: { target: "", port: 0 } },
       };
 
       await action.onKeyDown(ev as any);
@@ -238,7 +240,7 @@ describe("ToggleDeviceAction", () => {
       const mockAction = createMockAction();
       const ev = {
         action: mockAction,
-        payload: { settings: { target: "Lamp", port: 0, iconStyle: "" } },
+        payload: { settings: { target: "Lamp", port: 0 } },
       };
 
       await action.onWillAppear(ev as any);
@@ -250,7 +252,7 @@ describe("ToggleDeviceAction", () => {
       await action.onKeyDown(ev as any);
 
       expect(mockClient.toggle).toHaveBeenCalledWith("Lamp");
-      expect(mockAction.setImage).toHaveBeenCalledWith("imgs/device-types/light-off.png");
+      expect(mockAction.setImage).toHaveBeenCalledWith("data:image/png;base64,mock-lightbulb-off");
       expect(mockAction.setState).toHaveBeenCalledWith(0);
     });
 
@@ -259,7 +261,7 @@ describe("ToggleDeviceAction", () => {
 
       const ev = {
         action: createMockAction(),
-        payload: { settings: { target: "Lamp", port: 0, iconStyle: "" } },
+        payload: { settings: { target: "Lamp", port: 0 } },
       };
 
       await action.onKeyDown(ev as any);
@@ -273,7 +275,7 @@ describe("ToggleDeviceAction", () => {
 
       const ev = {
         action: createMockAction(),
-        payload: { settings: { target: "Lamp", port: 0, iconStyle: "" } },
+        payload: { settings: { target: "Lamp", port: 0 } },
       };
 
       await action.onKeyDown(ev as any);
@@ -287,7 +289,7 @@ describe("ToggleDeviceAction", () => {
 
       const ev = {
         action: createMockAction(),
-        payload: { settings: { target: "Uncached", port: 0, iconStyle: "" } },
+        payload: { settings: { target: "Uncached", port: 0 } },
       };
 
       await action.onKeyDown(ev as any);
@@ -299,7 +301,7 @@ describe("ToggleDeviceAction", () => {
   describe("polling", () => {
     it("polls all actions at 3s intervals", async () => {
       const mockAction = createMockAction();
-      mockAction.getSettings.mockResolvedValue({ target: "Lamp", iconStyle: "" });
+      mockAction.getSettings.mockResolvedValue({ target: "Lamp" });
       mockClient.getDeviceInfo.mockResolvedValue({
         name: "Lamp", type: "light", reachable: true, state: { on: true },
       });
@@ -310,7 +312,7 @@ describe("ToggleDeviceAction", () => {
 
       const ev = {
         action: createMockAction(),
-        payload: { settings: { target: "", port: 0, iconStyle: "" } },
+        payload: { settings: { target: "", port: 0 } },
       };
 
       await action.onWillAppear(ev as any);
@@ -333,7 +335,7 @@ describe("ToggleDeviceAction", () => {
 
       const ev = {
         action: createMockAction(),
-        payload: { settings: { target: "", port: 0, iconStyle: "" } },
+        payload: { settings: { target: "", port: 0 } },
       };
 
       await action.onWillAppear(ev as any);
@@ -346,11 +348,11 @@ describe("ToggleDeviceAction", () => {
     it("does not start duplicate timers", async () => {
       const ev = {
         action: { ...createMockAction(), id: "ctx-1" },
-        payload: { settings: { target: "", port: 0, iconStyle: "" } },
+        payload: { settings: { target: "", port: 0 } },
       };
       const ev2 = {
         action: { ...createMockAction(), id: "ctx-2" },
-        payload: { settings: { target: "", port: 0, iconStyle: "" } },
+        payload: { settings: { target: "", port: 0 } },
       };
 
       await action.onWillAppear(ev as any);
@@ -363,7 +365,7 @@ describe("ToggleDeviceAction", () => {
       const mockAction = {
         ...createMockAction(),
         setState: vi.fn(),
-        getSettings: vi.fn().mockResolvedValue({ target: "", iconStyle: "" }),
+        getSettings: vi.fn().mockResolvedValue({ target: "" }),
       };
       Object.defineProperty(action, "actions", {
         get: () => [mockAction],
@@ -371,7 +373,7 @@ describe("ToggleDeviceAction", () => {
 
       const ev = {
         action: createMockAction(),
-        payload: { settings: { target: "", port: 0, iconStyle: "" } },
+        payload: { settings: { target: "", port: 0 } },
       };
 
       await action.onWillAppear(ev as any);
@@ -390,7 +392,7 @@ describe("ToggleDeviceAction", () => {
 
       const ev = {
         action: createMockAction(),
-        payload: { settings: { target: "Lamp", port: 0, iconStyle: "" } },
+        payload: { settings: { target: "Lamp", port: 0 } },
       };
 
       await action.onWillAppear(ev as any);
@@ -405,7 +407,7 @@ describe("ToggleDeviceAction", () => {
 
       const ev = {
         action: createMockAction(),
-        payload: { settings: { target: "Lamp", port: 0, iconStyle: "" } },
+        payload: { settings: { target: "Lamp", port: 0 } },
       };
 
       await action.onWillAppear(ev as any);

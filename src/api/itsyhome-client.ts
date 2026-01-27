@@ -9,6 +9,7 @@ export const DEFAULT_HOST = "127.0.0.1";
 export type DeviceInfo = {
   name: string;
   type: string;
+  icon?: string;
   room?: string;
   reachable: boolean;
   state?: DeviceState;
@@ -31,6 +32,7 @@ export type DeviceState = {
 
 export type SceneInfo = {
   name: string;
+  icon?: string;
 };
 
 export type GroupInfo = {
@@ -43,6 +45,7 @@ export type GroupInfo = {
 export type ListDevice = {
   name: string;
   type: string;
+  icon?: string;
   room?: string;
   reachable: boolean;
 };

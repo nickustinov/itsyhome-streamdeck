@@ -11,6 +11,10 @@ vi.mock("../../src/api/itsyhome-client", () => ({
   ItsyhomeClient: vi.fn(),
 }));
 
+vi.mock("../../src/icons", () => ({
+  getSceneIcon: vi.fn((apiIcon?: string) => `imgs/icons/${apiIcon ?? "sparkle"}-on.png`),
+}));
+
 import { ExecuteSceneAction } from "../../src/actions/execute-scene";
 import { ItsyhomeClient } from "../../src/api/itsyhome-client";
 import streamDeck from "@elgato/streamdeck";
@@ -21,6 +25,11 @@ describe("ExecuteSceneAction", () => {
 
   beforeEach(() => {
     mockClient = createMockClient();
+    mockClient.listScenes.mockResolvedValue([
+      { name: "Good Morning", icon: "sun" },
+      { name: "Night", icon: "moon" },
+      { name: "Updated Scene", icon: "star" },
+    ]);
     vi.mocked(ItsyhomeClient).mockImplementation(() => mockClient as unknown as ItsyhomeClient);
     action = new ExecuteSceneAction();
   });
@@ -30,33 +39,22 @@ describe("ExecuteSceneAction", () => {
   });
 
   describe("onWillAppear", () => {
-    it("sets default icon and title when scene is set", async () => {
+    it("sets icon from API and title when scene is set", async () => {
       const ev = {
         action: createMockAction(),
-        payload: { settings: { scene: "Good Morning", port: 0, iconStyle: "" } },
+        payload: { settings: { scene: "Good Morning", port: 0 } },
       };
 
       await action.onWillAppear(ev as any);
 
-      expect(ev.action.setImage).toHaveBeenCalledWith("imgs/device-types/sparkle-on.png");
+      expect(ev.action.setImage).toHaveBeenCalledWith("imgs/icons/sun-on.png");
       expect(ev.action.setTitle).toHaveBeenCalledWith("Good Morning");
-    });
-
-    it("uses custom iconStyle", async () => {
-      const ev = {
-        action: createMockAction(),
-        payload: { settings: { scene: "Night", port: 0, iconStyle: "play" } },
-      };
-
-      await action.onWillAppear(ev as any);
-
-      expect(ev.action.setImage).toHaveBeenCalledWith("imgs/device-types/play-on.png");
     });
 
     it("does not set title when scene is empty", async () => {
       const ev = {
         action: createMockAction(),
-        payload: { settings: { scene: "", port: 0, iconStyle: "" } },
+        payload: { settings: { scene: "", port: 0 } },
       };
 
       await action.onWillAppear(ev as any);
@@ -67,7 +65,7 @@ describe("ExecuteSceneAction", () => {
     it("uses custom port", async () => {
       const ev = {
         action: createMockAction(),
-        payload: { settings: { scene: "Test", port: 9999, iconStyle: "" } },
+        payload: { settings: { scene: "Test", port: 9999 } },
       };
 
       await action.onWillAppear(ev as any);
@@ -80,19 +78,19 @@ describe("ExecuteSceneAction", () => {
     it("updates icon and title", async () => {
       const ev = {
         action: createMockAction(),
-        payload: { settings: { scene: "Updated Scene", port: 0, iconStyle: "sparkle" } },
+        payload: { settings: { scene: "Updated Scene", port: 0 } },
       };
 
       await action.onDidReceiveSettings(ev as any);
 
-      expect(ev.action.setImage).toHaveBeenCalledWith("imgs/device-types/sparkle-on.png");
+      expect(ev.action.setImage).toHaveBeenCalledWith("imgs/icons/star-on.png");
       expect(ev.action.setTitle).toHaveBeenCalledWith("Updated Scene");
     });
 
     it("uses custom port", async () => {
       const ev = {
         action: createMockAction(),
-        payload: { settings: { scene: "Test", port: 5555, iconStyle: "" } },
+        payload: { settings: { scene: "Test", port: 5555 } },
       };
 
       await action.onDidReceiveSettings(ev as any);
@@ -103,7 +101,7 @@ describe("ExecuteSceneAction", () => {
     it("does not set title when scene is empty", async () => {
       const ev = {
         action: createMockAction(),
-        payload: { settings: { scene: "", port: 0, iconStyle: "" } },
+        payload: { settings: { scene: "", port: 0 } },
       };
 
       await action.onDidReceiveSettings(ev as any);
@@ -116,7 +114,7 @@ describe("ExecuteSceneAction", () => {
     it("shows alert when no scene", async () => {
       const ev = {
         action: createMockAction(),
-        payload: { settings: { scene: "", port: 0, iconStyle: "" } },
+        payload: { settings: { scene: "", port: 0 } },
       };
 
       await action.onKeyDown(ev as any);
@@ -129,7 +127,7 @@ describe("ExecuteSceneAction", () => {
 
       const ev = {
         action: createMockAction(),
-        payload: { settings: { scene: "Good Morning", port: 0, iconStyle: "" } },
+        payload: { settings: { scene: "Good Morning", port: 0 } },
       };
 
       await action.onKeyDown(ev as any);
@@ -143,7 +141,7 @@ describe("ExecuteSceneAction", () => {
 
       const ev = {
         action: createMockAction(),
-        payload: { settings: { scene: "Bad Scene", port: 0, iconStyle: "" } },
+        payload: { settings: { scene: "Bad Scene", port: 0 } },
       };
 
       await action.onKeyDown(ev as any);
@@ -157,7 +155,7 @@ describe("ExecuteSceneAction", () => {
 
       const ev = {
         action: createMockAction(),
-        payload: { settings: { scene: "Test", port: 0, iconStyle: "" } },
+        payload: { settings: { scene: "Test", port: 0 } },
       };
 
       await action.onKeyDown(ev as any);

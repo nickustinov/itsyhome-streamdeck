@@ -11,6 +11,10 @@ vi.mock("../../src/api/itsyhome-client", () => ({
   ItsyhomeClient: vi.fn(),
 }));
 
+vi.mock("../../src/icons", () => ({
+  getGarageDoorIcon: vi.fn((isOpen: boolean, apiIcon?: string) => `imgs/icons/${apiIcon ?? "garage"}-${isOpen ? "on" : "off"}.png`),
+}));
+
 import { GarageDoorAction } from "../../src/actions/garage-door";
 import { ItsyhomeClient } from "../../src/api/itsyhome-client";
 import streamDeck from "@elgato/streamdeck";
@@ -39,15 +43,15 @@ describe("GarageDoorAction", () => {
 
       const ev = {
         action: createMockAction(),
-        payload: { settings: { target: "Garage", port: 0, iconStyle: "" } },
+        payload: { settings: { target: "Garage", port: 0 } },
       };
 
       await action.onWillAppear(ev as any);
 
       // First call is the initial "closed" state
-      expect(ev.action.setImage).toHaveBeenNthCalledWith(1, "imgs/device-types/garage-door-off.png");
+      expect(ev.action.setImage).toHaveBeenNthCalledWith(1, "imgs/icons/garage-off.png");
       // Second call is the server response "open"
-      expect(ev.action.setImage).toHaveBeenNthCalledWith(2, "imgs/device-types/garage-door-on.png");
+      expect(ev.action.setImage).toHaveBeenNthCalledWith(2, "imgs/icons/garage-on.png");
     });
 
     it("uses custom port", async () => {
@@ -57,7 +61,7 @@ describe("GarageDoorAction", () => {
 
       const ev = {
         action: createMockAction(),
-        payload: { settings: { target: "Garage", port: 4444, iconStyle: "" } },
+        payload: { settings: { target: "Garage", port: 4444 } },
       };
 
       await action.onWillAppear(ev as any);
@@ -68,28 +72,13 @@ describe("GarageDoorAction", () => {
     it("shows closed state when no target", async () => {
       const ev = {
         action: createMockAction(),
-        payload: { settings: { target: "", port: 0, iconStyle: "" } },
+        payload: { settings: { target: "", port: 0 } },
       };
 
       await action.onWillAppear(ev as any);
 
-      expect(ev.action.setImage).toHaveBeenCalledWith("imgs/device-types/garage-door-off.png");
+      expect(ev.action.setImage).toHaveBeenCalledWith("imgs/icons/garage-off.png");
       expect(mockClient.getDeviceInfo).not.toHaveBeenCalled();
-    });
-
-    it("uses custom iconStyle", async () => {
-      mockClient.getDeviceInfo.mockResolvedValue({
-        name: "Garage", type: "garage-door", reachable: true, state: { doorState: "closed" },
-      });
-
-      const ev = {
-        action: createMockAction(),
-        payload: { settings: { target: "Garage", port: 0, iconStyle: "car" } },
-      };
-
-      await action.onWillAppear(ev as any);
-
-      expect(ev.action.setImage).toHaveBeenNthCalledWith(1, "imgs/device-types/car-off.png");
     });
 
     it("treats opening as open", async () => {
@@ -99,12 +88,12 @@ describe("GarageDoorAction", () => {
 
       const ev = {
         action: createMockAction(),
-        payload: { settings: { target: "Garage", port: 0, iconStyle: "" } },
+        payload: { settings: { target: "Garage", port: 0 } },
       };
 
       await action.onWillAppear(ev as any);
 
-      expect(ev.action.setImage).toHaveBeenNthCalledWith(2, "imgs/device-types/garage-door-on.png");
+      expect(ev.action.setImage).toHaveBeenNthCalledWith(2, "imgs/icons/garage-on.png");
       expect(ev.action.setState).toHaveBeenLastCalledWith(1);
     });
 
@@ -115,12 +104,12 @@ describe("GarageDoorAction", () => {
 
       const ev = {
         action: createMockAction(),
-        payload: { settings: { target: "Garage", port: 0, iconStyle: "" } },
+        payload: { settings: { target: "Garage", port: 0 } },
       };
 
       await action.onWillAppear(ev as any);
 
-      expect(ev.action.setImage).toHaveBeenNthCalledWith(2, "imgs/device-types/garage-door-off.png");
+      expect(ev.action.setImage).toHaveBeenNthCalledWith(2, "imgs/icons/garage-off.png");
       expect(ev.action.setState).toHaveBeenLastCalledWith(0);
     });
 
@@ -131,7 +120,7 @@ describe("GarageDoorAction", () => {
 
       const ev = {
         action: createMockAction(),
-        payload: { settings: { target: "Garage", port: 0, iconStyle: "" } },
+        payload: { settings: { target: "Garage", port: 0 } },
       };
 
       await action.onWillAppear(ev as any);
@@ -146,7 +135,7 @@ describe("GarageDoorAction", () => {
 
       const ev = {
         action: createMockAction(),
-        payload: { settings: { target: "Garage", port: 0, iconStyle: "" } },
+        payload: { settings: { target: "Garage", port: 0 } },
       };
 
       await action.onWillAppear(ev as any);
@@ -159,7 +148,7 @@ describe("GarageDoorAction", () => {
 
       const ev = {
         action: createMockAction(),
-        payload: { settings: { target: "Garage", port: 0, iconStyle: "" } },
+        payload: { settings: { target: "Garage", port: 0 } },
       };
 
       await action.onWillAppear(ev as any);
@@ -173,7 +162,7 @@ describe("GarageDoorAction", () => {
 
       const ev = {
         action: createMockAction(),
-        payload: { settings: { target: "Garage", port: 0, iconStyle: "" } },
+        payload: { settings: { target: "Garage", port: 0 } },
       };
 
       await action.onWillAppear(ev as any);
@@ -187,7 +176,7 @@ describe("GarageDoorAction", () => {
     it("stops polling when last context disappears", async () => {
       const ev = {
         action: { ...createMockAction(), id: "ctx-1" },
-        payload: { settings: { target: "", port: 0, iconStyle: "" } },
+        payload: { settings: { target: "", port: 0 } },
       };
 
       await action.onWillAppear(ev as any);
@@ -203,7 +192,7 @@ describe("GarageDoorAction", () => {
 
       const ev = {
         action: createMockAction(),
-        payload: { settings: { target: "Garage", port: 0, iconStyle: "" } },
+        payload: { settings: { target: "Garage", port: 0 } },
       };
 
       await action.onDidReceiveSettings(ev as any);
@@ -214,12 +203,12 @@ describe("GarageDoorAction", () => {
     it("shows closed when no target", async () => {
       const ev = {
         action: createMockAction(),
-        payload: { settings: { target: "", port: 0, iconStyle: "" } },
+        payload: { settings: { target: "", port: 0 } },
       };
 
       await action.onDidReceiveSettings(ev as any);
 
-      expect(ev.action.setImage).toHaveBeenCalledWith("imgs/device-types/garage-door-off.png");
+      expect(ev.action.setImage).toHaveBeenCalledWith("imgs/icons/garage-off.png");
       expect(ev.action.setState).toHaveBeenCalledWith(0);
     });
 
@@ -230,7 +219,7 @@ describe("GarageDoorAction", () => {
 
       const ev = {
         action: createMockAction(),
-        payload: { settings: { target: "Garage", port: 3333, iconStyle: "" } },
+        payload: { settings: { target: "Garage", port: 3333 } },
       };
 
       await action.onDidReceiveSettings(ev as any);
@@ -243,7 +232,7 @@ describe("GarageDoorAction", () => {
     it("shows alert when no target", async () => {
       const ev = {
         action: createMockAction(),
-        payload: { settings: { target: "", port: 0, iconStyle: "" } },
+        payload: { settings: { target: "", port: 0 } },
       };
 
       await action.onKeyDown(ev as any);
@@ -259,7 +248,7 @@ describe("GarageDoorAction", () => {
       const mockAction = createMockAction();
       const ev = {
         action: mockAction,
-        payload: { settings: { target: "Garage", port: 0, iconStyle: "" } },
+        payload: { settings: { target: "Garage", port: 0 } },
       };
 
       await action.onWillAppear(ev as any);
@@ -271,7 +260,7 @@ describe("GarageDoorAction", () => {
 
       await action.onKeyDown(ev as any);
 
-      expect(mockAction.setImage).toHaveBeenCalledWith("imgs/device-types/garage-door-on.png");
+      expect(mockAction.setImage).toHaveBeenCalledWith("imgs/icons/garage-on.png");
       expect(mockAction.setState).toHaveBeenCalledWith(1);
     });
 
@@ -283,7 +272,7 @@ describe("GarageDoorAction", () => {
       const mockAction = createMockAction();
       const ev = {
         action: mockAction,
-        payload: { settings: { target: "Garage", port: 0, iconStyle: "" } },
+        payload: { settings: { target: "Garage", port: 0 } },
       };
 
       await action.onWillAppear(ev as any);
@@ -295,7 +284,7 @@ describe("GarageDoorAction", () => {
 
       await action.onKeyDown(ev as any);
 
-      expect(mockAction.setImage).toHaveBeenCalledWith("imgs/device-types/garage-door-off.png");
+      expect(mockAction.setImage).toHaveBeenCalledWith("imgs/icons/garage-off.png");
       expect(mockAction.setState).toHaveBeenCalledWith(0);
     });
 
@@ -307,7 +296,7 @@ describe("GarageDoorAction", () => {
       const mockAction = createMockAction();
       const ev = {
         action: mockAction,
-        payload: { settings: { target: "Garage", port: 0, iconStyle: "" } },
+        payload: { settings: { target: "Garage", port: 0 } },
       };
 
       await action.onWillAppear(ev as any);
@@ -320,7 +309,7 @@ describe("GarageDoorAction", () => {
       await action.onKeyDown(ev as any);
 
       // closing is treated as closed/closing → should toggle to open
-      expect(mockAction.setImage).toHaveBeenCalledWith("imgs/device-types/garage-door-on.png");
+      expect(mockAction.setImage).toHaveBeenCalledWith("imgs/icons/garage-on.png");
       expect(mockAction.setState).toHaveBeenCalledWith(1);
     });
 
@@ -330,13 +319,13 @@ describe("GarageDoorAction", () => {
 
       const ev = {
         action: createMockAction(),
-        payload: { settings: { target: "NewGarage", port: 0, iconStyle: "" } },
+        payload: { settings: { target: "NewGarage", port: 0 } },
       };
 
       await action.onKeyDown(ev as any);
 
       // default "closed" → opens
-      expect(ev.action.setImage).toHaveBeenCalledWith("imgs/device-types/garage-door-on.png");
+      expect(ev.action.setImage).toHaveBeenCalledWith("imgs/icons/garage-on.png");
       expect(ev.action.setState).toHaveBeenCalledWith(1);
     });
 
@@ -348,7 +337,7 @@ describe("GarageDoorAction", () => {
       const mockAction = { ...createMockAction(), id: "ctx-1" };
       const ev = {
         action: mockAction,
-        payload: { settings: { target: "Garage", port: 0, iconStyle: "" } },
+        payload: { settings: { target: "Garage", port: 0 } },
       };
 
       await action.onWillAppear(ev as any);
@@ -362,7 +351,7 @@ describe("GarageDoorAction", () => {
       const pollAction = {
         ...createMockAction(),
         setState: vi.fn(),
-        getSettings: vi.fn().mockResolvedValue({ target: "Garage", iconStyle: "" }),
+        getSettings: vi.fn().mockResolvedValue({ target: "Garage" }),
       };
       Object.defineProperty(action, "actions", {
         get: () => [pollAction],
@@ -385,7 +374,7 @@ describe("GarageDoorAction", () => {
       const mockAction = { ...createMockAction(), id: "ctx-1" };
       const ev = {
         action: mockAction,
-        payload: { settings: { target: "Garage", port: 0, iconStyle: "" } },
+        payload: { settings: { target: "Garage", port: 0 } },
       };
 
       await action.onWillAppear(ev as any);
@@ -398,7 +387,7 @@ describe("GarageDoorAction", () => {
       const pollAction = {
         ...createMockAction(),
         setState: vi.fn(),
-        getSettings: vi.fn().mockResolvedValue({ target: "Garage", iconStyle: "" }),
+        getSettings: vi.fn().mockResolvedValue({ target: "Garage" }),
       };
       Object.defineProperty(action, "actions", {
         get: () => [pollAction],
@@ -422,7 +411,7 @@ describe("GarageDoorAction", () => {
 
       const ev = {
         action: createMockAction(),
-        payload: { settings: { target: "Garage", port: 0, iconStyle: "" } },
+        payload: { settings: { target: "Garage", port: 0 } },
       };
 
       await action.onKeyDown(ev as any);
@@ -436,7 +425,7 @@ describe("GarageDoorAction", () => {
 
       const ev = {
         action: createMockAction(),
-        payload: { settings: { target: "Garage", port: 0, iconStyle: "" } },
+        payload: { settings: { target: "Garage", port: 0 } },
       };
 
       await action.onKeyDown(ev as any);
@@ -450,11 +439,11 @@ describe("GarageDoorAction", () => {
     it("does not start duplicate timers", async () => {
       const ev1 = {
         action: { ...createMockAction(), id: "ctx-1" },
-        payload: { settings: { target: "", port: 0, iconStyle: "" } },
+        payload: { settings: { target: "", port: 0 } },
       };
       const ev2 = {
         action: { ...createMockAction(), id: "ctx-2" },
-        payload: { settings: { target: "", port: 0, iconStyle: "" } },
+        payload: { settings: { target: "", port: 0 } },
       };
 
       await action.onWillAppear(ev1 as any);
@@ -465,7 +454,7 @@ describe("GarageDoorAction", () => {
       const pollAction = {
         ...createMockAction(),
         setState: vi.fn(),
-        getSettings: vi.fn().mockResolvedValue({ target: "Garage", iconStyle: "" }),
+        getSettings: vi.fn().mockResolvedValue({ target: "Garage" }),
       };
       mockClient.getDeviceInfo.mockResolvedValue({
         name: "Garage", type: "garage-door", reachable: true, state: { doorState: "closed" },
@@ -478,7 +467,7 @@ describe("GarageDoorAction", () => {
 
       const ev = {
         action: createMockAction(),
-        payload: { settings: { target: "", port: 0, iconStyle: "" } },
+        payload: { settings: { target: "", port: 0 } },
       };
 
       await action.onWillAppear(ev as any);
@@ -502,7 +491,7 @@ describe("GarageDoorAction", () => {
 
       const ev = {
         action: createMockAction(),
-        payload: { settings: { target: "", port: 0, iconStyle: "" } },
+        payload: { settings: { target: "", port: 0 } },
       };
 
       await action.onWillAppear(ev as any);
@@ -516,7 +505,7 @@ describe("GarageDoorAction", () => {
       const pollAction = {
         ...createMockAction(),
         setState: vi.fn(),
-        getSettings: vi.fn().mockResolvedValue({ target: "", iconStyle: "" }),
+        getSettings: vi.fn().mockResolvedValue({ target: "" }),
       };
       Object.defineProperty(action, "actions", {
         get: () => [pollAction],
@@ -525,7 +514,7 @@ describe("GarageDoorAction", () => {
 
       const ev = {
         action: createMockAction(),
-        payload: { settings: { target: "", port: 0, iconStyle: "" } },
+        payload: { settings: { target: "", port: 0 } },
       };
 
       await action.onWillAppear(ev as any);

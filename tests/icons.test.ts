@@ -1,79 +1,115 @@
 import { describe, it, expect } from "vitest";
-import { getDeviceIcon, getThermostatIcon, getGroupIcon } from "../src/icons";
+import {
+  getIconFromName,
+  getDeviceIcon,
+  getThermostatIcon,
+  getGroupIcon,
+  getSceneIcon,
+  getLockIcon,
+  getGarageDoorIcon,
+} from "../src/icons";
+
+describe("getIconFromName", () => {
+  it("returns correct on icon path", () => {
+    expect(getIconFromName("lightbulb", true)).toBe("imgs/icons/lightbulb-on.png");
+  });
+
+  it("returns correct off icon path", () => {
+    expect(getIconFromName("lightbulb", false)).toBe("imgs/icons/lightbulb-off.png");
+  });
+});
 
 describe("getDeviceIcon", () => {
-  const knownTypes = [
-    "light", "switch", "outlet", "fan", "thermostat",
-    "heater-cooler", "lock", "blinds", "garage-door",
-    "temperature-sensor", "humidity-sensor", "security-system",
+  const fallbackMappings = [
+    { type: "light", icon: "lightbulb" },
+    { type: "switch", icon: "switch" },
+    { type: "outlet", icon: "plug" },
+    { type: "fan", icon: "fan" },
+    { type: "thermostat", icon: "thermometer" },
+    { type: "heater-cooler", icon: "thermometer" },
+    { type: "lock", icon: "lock" },
+    { type: "blinds", icon: "venetian-mask" },
+    { type: "garage-door", icon: "garage" },
+    { type: "temperature-sensor", icon: "thermometer-simple" },
+    { type: "humidity-sensor", icon: "drop" },
+    { type: "security-system", icon: "shield-check" },
   ];
 
-  it.each(knownTypes)("returns correct on icon for %s", (type) => {
-    expect(getDeviceIcon(type, true)).toBe(`imgs/device-types/${type}-on.png`);
+  it.each(fallbackMappings)("returns fallback icon for $type", ({ type, icon }) => {
+    expect(getDeviceIcon(type, true)).toBe(`imgs/icons/${icon}-on.png`);
+    expect(getDeviceIcon(type, false)).toBe(`imgs/icons/${icon}-off.png`);
   });
 
-  it.each(knownTypes)("returns correct off icon for %s", (type) => {
-    expect(getDeviceIcon(type, false)).toBe(`imgs/device-types/${type}-off.png`);
+  it("falls back to question for unknown device type", () => {
+    expect(getDeviceIcon("unknown-device", true)).toBe("imgs/icons/question-on.png");
+    expect(getDeviceIcon("unknown-device", false)).toBe("imgs/icons/question-off.png");
   });
 
-  it("falls back to light for unknown device type", () => {
-    expect(getDeviceIcon("unknown-device", true)).toBe("imgs/device-types/light-on.png");
-    expect(getDeviceIcon("unknown-device", false)).toBe("imgs/device-types/light-off.png");
+  it("uses API icon when provided", () => {
+    expect(getDeviceIcon("light", true, "lamp")).toBe("imgs/icons/lamp-on.png");
+    expect(getDeviceIcon("light", false, "lamp")).toBe("imgs/icons/lamp-off.png");
   });
 });
 
 describe("getThermostatIcon", () => {
-  describe("thermostat type", () => {
-    it("returns mode-specific icon when on with known mode", () => {
-      expect(getThermostatIcon("thermostat", true, "heat")).toBe("imgs/device-types/thermostat-heat.png");
-      expect(getThermostatIcon("thermostat", true, "cool")).toBe("imgs/device-types/thermostat-cool.png");
-      expect(getThermostatIcon("thermostat", true, "auto")).toBe("imgs/device-types/thermostat-auto.png");
-    });
-
-    it("returns mode-off icon when off with known mode", () => {
-      expect(getThermostatIcon("thermostat", false, "heat")).toBe("imgs/device-types/thermostat-heat-off.png");
-      expect(getThermostatIcon("thermostat", false, "cool")).toBe("imgs/device-types/thermostat-cool-off.png");
-      expect(getThermostatIcon("thermostat", false, "auto")).toBe("imgs/device-types/thermostat-auto-off.png");
-    });
-
-    it("returns off icon when off with no mode", () => {
-      expect(getThermostatIcon("thermostat", false, undefined)).toBe("imgs/device-types/thermostat-off.png");
-    });
-
-    it("returns off icon when on with unknown mode", () => {
-      expect(getThermostatIcon("thermostat", true, "unknown")).toBe("imgs/device-types/thermostat-off.png");
-    });
-
-    it("returns off icon when on with no mode", () => {
-      expect(getThermostatIcon("thermostat", true, undefined)).toBe("imgs/device-types/thermostat-off.png");
-    });
+  it("returns thermometer icon for thermostat type", () => {
+    expect(getThermostatIcon("thermostat", true, undefined)).toBe("imgs/icons/thermometer-on.png");
+    expect(getThermostatIcon("thermostat", false, undefined)).toBe("imgs/icons/thermometer-off.png");
   });
 
-  describe("heater-cooler type", () => {
-    it("returns heater-cooler mode icon when on with known mode", () => {
-      expect(getThermostatIcon("heater-cooler", true, "heat")).toBe("imgs/device-types/heater-cooler-heat.png");
-      expect(getThermostatIcon("heater-cooler", true, "cool")).toBe("imgs/device-types/heater-cooler-cool.png");
-      expect(getThermostatIcon("heater-cooler", true, "auto")).toBe("imgs/device-types/heater-cooler-auto.png");
-    });
+  it("returns thermometer icon for heater-cooler type", () => {
+    expect(getThermostatIcon("heater-cooler", true, "heat")).toBe("imgs/icons/thermometer-on.png");
+    expect(getThermostatIcon("heater-cooler", false, "cool")).toBe("imgs/icons/thermometer-off.png");
+  });
 
-    it("returns heater-cooler mode-off icon when off with known mode", () => {
-      expect(getThermostatIcon("heater-cooler", false, "heat")).toBe("imgs/device-types/heater-cooler-heat-off.png");
-      expect(getThermostatIcon("heater-cooler", false, "cool")).toBe("imgs/device-types/heater-cooler-cool-off.png");
-      expect(getThermostatIcon("heater-cooler", false, "auto")).toBe("imgs/device-types/heater-cooler-auto-off.png");
-    });
-
-    it("returns heater-cooler off icon with no mode", () => {
-      expect(getThermostatIcon("heater-cooler", false, undefined)).toBe("imgs/device-types/heater-cooler-off.png");
-    });
+  it("uses API icon when provided", () => {
+    expect(getThermostatIcon("thermostat", true, undefined, "snowflake")).toBe("imgs/icons/snowflake-on.png");
+    expect(getThermostatIcon("heater-cooler", false, undefined, "fire")).toBe("imgs/icons/fire-off.png");
   });
 });
 
 describe("getGroupIcon", () => {
-  it("returns group-on icon when on", () => {
-    expect(getGroupIcon(true)).toBe("imgs/device-types/group-on.png");
+  it("returns squares-four icon for group", () => {
+    expect(getGroupIcon(true)).toBe("imgs/icons/squares-four-on.png");
+    expect(getGroupIcon(false)).toBe("imgs/icons/squares-four-off.png");
   });
 
-  it("returns group-off icon when off", () => {
-    expect(getGroupIcon(false)).toBe("imgs/device-types/group-off.png");
+  it("uses API icon when provided", () => {
+    expect(getGroupIcon(true, "house")).toBe("imgs/icons/house-on.png");
+    expect(getGroupIcon(false, "house")).toBe("imgs/icons/house-off.png");
+  });
+});
+
+describe("getSceneIcon", () => {
+  it("returns sparkle icon by default", () => {
+    expect(getSceneIcon()).toBe("imgs/icons/sparkle-on.png");
+  });
+
+  it("uses API icon when provided", () => {
+    expect(getSceneIcon("moon")).toBe("imgs/icons/moon-on.png");
+  });
+});
+
+describe("getLockIcon", () => {
+  it("returns lock icon by default", () => {
+    expect(getLockIcon(true)).toBe("imgs/icons/lock-on.png");
+    expect(getLockIcon(false)).toBe("imgs/icons/lock-off.png");
+  });
+
+  it("uses API icon when provided", () => {
+    expect(getLockIcon(true, "shield")).toBe("imgs/icons/shield-on.png");
+    expect(getLockIcon(false, "shield")).toBe("imgs/icons/shield-off.png");
+  });
+});
+
+describe("getGarageDoorIcon", () => {
+  it("returns garage icon by default", () => {
+    expect(getGarageDoorIcon(true)).toBe("imgs/icons/garage-on.png");
+    expect(getGarageDoorIcon(false)).toBe("imgs/icons/garage-off.png");
+  });
+
+  it("uses API icon when provided", () => {
+    expect(getGarageDoorIcon(true, "car")).toBe("imgs/icons/car-on.png");
+    expect(getGarageDoorIcon(false, "car")).toBe("imgs/icons/car-off.png");
   });
 });

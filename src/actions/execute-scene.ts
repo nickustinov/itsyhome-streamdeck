@@ -5,12 +5,12 @@ import streamDeck, {
   SingletonAction,
   WillAppearEvent,
 } from "@elgato/streamdeck";
-import { ItsyhomeClient } from "../api/itsyhome-client";
+import { ItsyhomeClient, type SceneInfo } from "../api/itsyhome-client";
+import { getSceneIcon } from "../icons";
 
 type SceneSettings = {
   scene: string;
   port: number;
-  iconStyle?: string;
 };
 
 @action({ UUID: "com.nickustinov.itsyhome.scene" })
@@ -18,28 +18,43 @@ export class ExecuteSceneAction extends SingletonAction<SceneSettings> {
   private client = new ItsyhomeClient();
 
   override async onWillAppear(ev: WillAppearEvent<SceneSettings>): Promise<void> {
-    const { scene, port, iconStyle } = ev.payload.settings;
+    const { scene, port } = ev.payload.settings;
 
     if (port) {
       this.client = new ItsyhomeClient(undefined, port);
     }
 
-    await ev.action.setImage(`imgs/device-types/${iconStyle || "sparkle"}-on.png`);
     if (scene) {
+      await this.updateSceneIcon(ev.action, scene);
       await ev.action.setTitle(scene);
+    } else {
+      await ev.action.setImage(getSceneIcon());
     }
   }
 
   override async onDidReceiveSettings(ev: DidReceiveSettingsEvent<SceneSettings>): Promise<void> {
-    const { scene, port, iconStyle } = ev.payload.settings;
+    const { scene, port } = ev.payload.settings;
 
     if (port) {
       this.client = new ItsyhomeClient(undefined, port);
     }
 
-    await ev.action.setImage(`imgs/device-types/${iconStyle || "sparkle"}-on.png`);
     if (scene) {
+      await this.updateSceneIcon(ev.action, scene);
       await ev.action.setTitle(scene);
+    } else {
+      await ev.action.setImage(getSceneIcon());
+    }
+  }
+
+  private async updateSceneIcon(action: { setImage(image: string): Promise<void> }, sceneName: string): Promise<void> {
+    try {
+      const scenes = await this.client.listScenes();
+      const scene = scenes.find((s: SceneInfo) => s.name === sceneName);
+      await action.setImage(getSceneIcon(scene?.icon));
+    } catch {
+      // Fallback to default icon if API unavailable
+      await action.setImage(getSceneIcon());
     }
   }
 

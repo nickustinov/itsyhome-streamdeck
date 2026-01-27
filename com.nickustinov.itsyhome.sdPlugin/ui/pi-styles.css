@@ -102,36 +102,28 @@ button.refresh-btn:hover {
   border-color: var(--sd-accent);
 }
 
-.icon-picker {
+/* Color picker component */
+.color-swatches {
   display: flex;
+  gap: 6px;
   flex-wrap: wrap;
-  gap: 8px;
 }
 
-.icon-picker-option {
-  background-color: var(--sd-bg-secondary);
+.color-swatch {
+  width: 24px;
+  height: 24px;
   border: 2px solid var(--sd-border);
   border-radius: var(--sd-radius);
   cursor: pointer;
-  width: 48px;
-  height: 48px;
-  overflow: hidden;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  padding: 0;
+  transition: border-color 0.15s, transform 0.15s;
 }
 
-.icon-picker-option:hover {
+.color-swatch:hover {
+  transform: scale(1.1);
+}
+
+.color-swatch.selected {
   border-color: var(--sd-accent);
-}
-
-.icon-picker-option.selected {
-  border-color: var(--sd-accent);
-  background-color: rgba(0, 120, 212, 0.15);
-}
-
-.icon-picker-option img {
-  width: 64px;
-  height: 64px;
-  margin-top: 12px;
+  box-shadow: 0 0 0 1px var(--sd-accent);
 }

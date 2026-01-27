@@ -17,6 +17,13 @@ type ThermostatSettings = {
   display: "current-target" | "current" | "target";
 };
 
+type ThermostatCache = {
+  isOn: boolean;
+  deviceType: string;
+  mode?: string;
+  icon?: string;
+};
+
 const POLL_INTERVAL_MS = 3000;
 
 @action({ UUID: "com.nickustinov.itsyhome.thermostat" })
@@ -24,7 +31,7 @@ export class ThermostatAction extends SingletonAction<ThermostatSettings> {
   private client = new ItsyhomeClient();
   private pollTimer: ReturnType<typeof setInterval> | null = null;
   private activeContexts = new Set<string>();
-  private stateCache = new Map<string, { isOn: boolean; deviceType: string; mode?: string }>();
+  private stateCache = new Map<string, ThermostatCache>();
 
   override async onWillAppear(ev: WillAppearEvent<ThermostatSettings>): Promise<void> {
     const { target, port } = ev.payload.settings;
@@ -82,7 +89,7 @@ export class ThermostatAction extends SingletonAction<ThermostatSettings> {
         const newIsOn = !cached.isOn;
         this.stateCache.set(target, { ...cached, isOn: newIsOn });
         await (ev.action as KeyAction<ThermostatSettings>).setImage(
-          getThermostatIcon(cached.deviceType, newIsOn, cached.mode),
+          getThermostatIcon(cached.deviceType, newIsOn, cached.mode, cached.icon),
         );
         await (ev.action as KeyAction<ThermostatSettings>).setState(newIsOn ? 1 : 0);
       }
@@ -126,7 +133,8 @@ export class ThermostatAction extends SingletonAction<ThermostatSettings> {
       const targetTemp = state?.targetTemperature;
       const display = settings.display || "current-target";
 
-      this.stateCache.set(target, { isOn, deviceType: device.type, mode });
+      const icon = device.icon;
+      this.stateCache.set(target, { isOn, deviceType: device.type, mode, icon });
 
       let tempStr = "";
       if (display === "current-target" && current != null && targetTemp != null) {
@@ -142,7 +150,7 @@ export class ThermostatAction extends SingletonAction<ThermostatSettings> {
       const label = settings.label;
       const title = label && tempStr ? `${label}\n${tempStr}` : label || tempStr;
 
-      await action.setImage(getThermostatIcon(device.type, isOn, mode));
+      await action.setImage(getThermostatIcon(device.type, isOn, mode, icon));
       await action.setState(isOn ? 1 : 0);
       await action.setTitle(title);
     } catch {
