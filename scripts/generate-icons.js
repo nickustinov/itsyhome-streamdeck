@@ -152,6 +152,62 @@ async function main() {
 
   console.log(`\nGenerated ${files.length} icon files (${sizeMB} MB)`);
   console.log(`Output: ${OUTPUT_PATH}`);
+
+  // Copy default action icons
+  await copyActionDefaults();
+}
+
+/**
+ * Copy generated icons to action default image locations.
+ */
+async function copyActionDefaults() {
+  const actionsPath = join(__dirname, "../com.nickustinov.itsyhome.sdPlugin/imgs/actions");
+  const { copyFile } = await import("node:fs/promises");
+
+  const copies = [
+    // Toggle - lightbulb
+    ["lightbulb-off.png", "toggle/key-off.png"],
+    ["lightbulb-off@2x.png", "toggle/key-off@2x.png"],
+    ["lightbulb-on.png", "toggle/key-on.png"],
+    ["lightbulb-on@2x.png", "toggle/key-on@2x.png"],
+    // Scene - sparkle
+    ["sparkle-on.png", "scene/key.png"],
+    ["sparkle-on@2x.png", "scene/key@2x.png"],
+    // Brightness - lightbulb
+    ["lightbulb-off.png", "brightness/key-off.png"],
+    ["lightbulb-off@2x.png", "brightness/key-off@2x.png"],
+    ["lightbulb-on.png", "brightness/key-on.png"],
+    ["lightbulb-on@2x.png", "brightness/key-on@2x.png"],
+    // Lock
+    ["lock-off.png", "lock/key-unlocked.png"],
+    ["lock-off@2x.png", "lock/key-unlocked@2x.png"],
+    ["lock-on.png", "lock/key-locked.png"],
+    ["lock-on@2x.png", "lock/key-locked@2x.png"],
+    // Garage door
+    ["garage-off.png", "garage-door/key-closed.png"],
+    ["garage-off@2x.png", "garage-door/key-closed@2x.png"],
+    ["garage-on.png", "garage-door/key-open.png"],
+    ["garage-on@2x.png", "garage-door/key-open@2x.png"],
+    // Blinds
+    ["arrows-out-line-vertical-off.png", "blinds/key-open.png"],
+    ["arrows-out-line-vertical-off@2x.png", "blinds/key-open@2x.png"],
+    ["arrows-out-line-vertical-on.png", "blinds/key-closed.png"],
+    ["arrows-out-line-vertical-on@2x.png", "blinds/key-closed@2x.png"],
+    // Thermostat
+    ["thermometer-off.png", "thermostat/key-off.png"],
+    ["thermometer-off@2x.png", "thermostat/key-off@2x.png"],
+    ["thermometer-on.png", "thermostat/key-on.png"],
+    ["thermometer-on@2x.png", "thermostat/key-on@2x.png"],
+    // Status
+    ["info-off.png", "status/key.png"],
+    ["info-off@2x.png", "status/key@2x.png"],
+  ];
+
+  for (const [src, dest] of copies) {
+    await copyFile(join(OUTPUT_PATH, src), join(actionsPath, dest));
+  }
+
+  console.log(`Copied ${copies.length} action default icons`);
 }
 
 main().catch(console.error);
