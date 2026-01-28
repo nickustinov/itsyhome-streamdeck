@@ -56,5 +56,7 @@ export function createMockClient() {
     turnOn: vi.fn(),
     turnOff: vi.fn(),
     isAvailable: vi.fn(),
+    armSecurity: vi.fn(),
+    disarmSecurity: vi.fn(),
   };
 }

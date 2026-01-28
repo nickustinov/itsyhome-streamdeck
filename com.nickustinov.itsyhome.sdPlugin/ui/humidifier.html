@@ -2,7 +2,7 @@
 <html>
 <head>
   <meta charset="utf-8" />
-  <title>Switch/Outlet</title>
+  <title>Humidifier</title>
   <link rel="stylesheet" href="pi-styles.css" />
 </head>
 <body>
@@ -14,7 +14,7 @@
 
     <div class="sdpi-item">
       <label class="sdpi-item-label">Label</label>
-      <input type="text" id="label" placeholder="e.g. Kitchen" />
+      <input type="text" id="label" placeholder="e.g. Bedroom" />
     </div>
 
     <div class="sdpi-item">
@@ -41,7 +41,7 @@
     </div>
 
     <div class="sdpi-info">
-      Toggle a switch or outlet on/off. The button shows the current state.
+      Toggle a humidifier or dehumidifier on/off. Current humidity is displayed under the label.
     </div>
   </div>
 
@@ -53,18 +53,15 @@
     const portInput = document.getElementById("port");
     const refreshBtn = document.getElementById("refresh");
 
-    // Initialize color pickers
+    // Initialize color pickers (default: gray off, teal on)
     const offColorPicker = initColorPicker("offColorPicker", "offColor", "#8e8e93", saveSettings, getSettings);
-    const onColorPicker = initColorPicker("onColorPicker", "onColor", "#ff9500", saveSettings, getSettings);
-
-    // Simple on/off devices only
-    const TOGGLE_TYPES = ["switch", "outlet"];
+    const onColorPicker = initColorPicker("onColorPicker", "onColor", "#30b0c7", saveSettings, getSettings);
 
     function onSettingsLoaded(settings) {
       portInput.value = settings.port || "";
       labelInput.value = settings.label || "";
       hideConnectionError();
-      populateTargetSelect(targetSelect, settings.port, settings.target, { types: TOGGLE_TYPES, showGroups: false });
+      populateTargetSelect(targetSelect, settings.port, settings.target, { types: ["humidifier-dehumidifier"], showGroups: false });
       offColorPicker.setInitialValue();
       onColorPicker.setInitialValue();
     }
@@ -93,12 +90,12 @@
     portInput.addEventListener("change", () => {
       const port = portInput.value ? parseInt(portInput.value, 10) : undefined;
       saveSettings({ port });
-      populateTargetSelect(targetSelect, port, getSettings().target, { types: TOGGLE_TYPES, showGroups: false });
+      populateTargetSelect(targetSelect, port, getSettings().target, { types: ["humidifier-dehumidifier"], showGroups: false });
     });
 
     refreshBtn.addEventListener("click", () => {
       hideConnectionError();
-      populateTargetSelect(targetSelect, getSettings().port, getSettings().target, { types: TOGGLE_TYPES, showGroups: false });
+      populateTargetSelect(targetSelect, getSettings().port, getSettings().target, { types: ["humidifier-dehumidifier"], showGroups: false });
     });
   </script>
 </body>

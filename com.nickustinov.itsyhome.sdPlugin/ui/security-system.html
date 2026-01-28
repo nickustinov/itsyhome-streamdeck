@@ -2,7 +2,7 @@
 <html>
 <head>
   <meta charset="utf-8" />
-  <title>Switch/Outlet</title>
+  <title>Security System</title>
   <link rel="stylesheet" href="pi-styles.css" />
 </head>
 <body>
@@ -14,7 +14,16 @@
 
     <div class="sdpi-item">
       <label class="sdpi-item-label">Label</label>
-      <input type="text" id="label" placeholder="e.g. Kitchen" />
+      <input type="text" id="label" placeholder="e.g. Home" />
+    </div>
+
+    <div class="sdpi-item">
+      <label class="sdpi-item-label">Arm mode</label>
+      <select id="armMode">
+        <option value="0">Stay</option>
+        <option value="1" selected>Away</option>
+        <option value="2">Night</option>
+      </select>
     </div>
 
     <div class="sdpi-item">
@@ -22,13 +31,13 @@
     </div>
 
     <div class="sdpi-item">
-      <label class="sdpi-item-label">Off color</label>
-      <div id="offColorPicker"></div>
+      <label class="sdpi-item-label">Disarmed color</label>
+      <div id="disarmedColorPicker"></div>
     </div>
 
     <div class="sdpi-item">
-      <label class="sdpi-item-label">On color</label>
-      <div id="onColorPicker"></div>
+      <label class="sdpi-item-label">Armed color</label>
+      <div id="armedColorPicker"></div>
     </div>
 
     <div class="sdpi-item">
@@ -41,7 +50,7 @@
     </div>
 
     <div class="sdpi-info">
-      Toggle a switch or outlet on/off. The button shows the current state.
+      Toggle security system. Press to arm (selected mode) or disarm. Current state is shown under the label.
     </div>
   </div>
 
@@ -50,23 +59,22 @@
   <script>
     const targetSelect = document.getElementById("target");
     const labelInput = document.getElementById("label");
+    const armModeSelect = document.getElementById("armMode");
     const portInput = document.getElementById("port");
     const refreshBtn = document.getElementById("refresh");
 
-    // Initialize color pickers
-    const offColorPicker = initColorPicker("offColorPicker", "offColor", "#8e8e93", saveSettings, getSettings);
-    const onColorPicker = initColorPicker("onColorPicker", "onColor", "#ff9500", saveSettings, getSettings);
-
-    // Simple on/off devices only
-    const TOGGLE_TYPES = ["switch", "outlet"];
+    // Initialize color pickers (default: gray disarmed, green armed)
+    const disarmedColorPicker = initColorPicker("disarmedColorPicker", "disarmedColor", "#8e8e93", saveSettings, getSettings);
+    const armedColorPicker = initColorPicker("armedColorPicker", "armedColor", "#30d158", saveSettings, getSettings);
 
     function onSettingsLoaded(settings) {
       portInput.value = settings.port || "";
       labelInput.value = settings.label || "";
+      armModeSelect.value = settings.armMode != null ? String(settings.armMode) : "1";
       hideConnectionError();
-      populateTargetSelect(targetSelect, settings.port, settings.target, { types: TOGGLE_TYPES, showGroups: false });
-      offColorPicker.setInitialValue();
-      onColorPicker.setInitialValue();
+      populateTargetSelect(targetSelect, settings.port, settings.target, { types: ["security-system"], showGroups: false });
+      disarmedColorPicker.setInitialValue();
+      armedColorPicker.setInitialValue();
     }
 
     targetSelect.addEventListener("change", () => {
@@ -90,15 +98,20 @@
       saveSettings({ label: labelInput.value });
     });
 
+    armModeSelect.addEventListener("change", () => {
+      const armMode = parseInt(armModeSelect.value, 10);
+      saveSettings({ armMode });
+    });
+
     portInput.addEventListener("change", () => {
       const port = portInput.value ? parseInt(portInput.value, 10) : undefined;
       saveSettings({ port });
-      populateTargetSelect(targetSelect, port, getSettings().target, { types: TOGGLE_TYPES, showGroups: false });
+      populateTargetSelect(targetSelect, port, getSettings().target, { types: ["security-system"], showGroups: false });
     });
 
     refreshBtn.addEventListener("click", () => {
       hideConnectionError();
-      populateTargetSelect(targetSelect, getSettings().port, getSettings().target, { types: TOGGLE_TYPES, showGroups: false });
+      populateTargetSelect(targetSelect, getSettings().port, getSettings().target, { types: ["security-system"], showGroups: false });
     });
   </script>
 </body>

@@ -176,11 +176,15 @@ async function copyActionDefaults() {
     ["lightbulb", "toggle", WHITE],
     ["sparkle", "scene", WHITE],
     ["lightbulb", "brightness", WHITE],
+    ["fan", "fan", WHITE],
+    ["drop", "humidifier", WHITE],
+    ["shield-check", "security-system", WHITE],
     ["lock", "lock", WHITE],
     ["garage", "garage-door", WHITE],
     ["arrows-out-line-vertical", "blinds", WHITE],
     ["thermometer", "thermostat", WHITE],
     ["info", "status", WHITE],
+    ["squares-four", "group", WHITE],
   ];
 
   // Generate action list icons from SVG
@@ -205,6 +209,8 @@ async function copyActionDefaults() {
   // Button state icons (72x72, 144x144 @2x) - [source, dest, color]
   // ON = fill (solid), OFF = regular (outline)
   const GREEN = "#30d158";
+  const BLUE = "#007aff";
+  const TEAL = "#30b0c7";
   const buttonIcons = [
     // Toggle - lightbulb: OFF=regular+gray, ON=fill+orange
     ["lightbulb-regular.png", "toggle/key-off.png", GRAY],
@@ -219,6 +225,21 @@ async function copyActionDefaults() {
     ["lightbulb-regular@2x.png", "brightness/key-off@2x.png", GRAY],
     ["lightbulb-fill.png", "brightness/key-on.png", ORANGE],
     ["lightbulb-fill@2x.png", "brightness/key-on@2x.png", ORANGE],
+    // Fan: OFF=regular+gray, ON=fill+blue
+    ["fan-regular.png", "fan/key-off.png", GRAY],
+    ["fan-regular@2x.png", "fan/key-off@2x.png", GRAY],
+    ["fan-fill.png", "fan/key-on.png", BLUE],
+    ["fan-fill@2x.png", "fan/key-on@2x.png", BLUE],
+    // Humidifier: OFF=regular+gray, ON=fill+teal
+    ["drop-regular.png", "humidifier/key-off.png", GRAY],
+    ["drop-regular@2x.png", "humidifier/key-off@2x.png", GRAY],
+    ["drop-fill.png", "humidifier/key-on.png", TEAL],
+    ["drop-fill@2x.png", "humidifier/key-on@2x.png", TEAL],
+    // Security System: disarmed=regular+gray, armed=fill+green
+    ["shield-check-regular.png", "security-system/key-off.png", GRAY],
+    ["shield-check-regular@2x.png", "security-system/key-off@2x.png", GRAY],
+    ["shield-check-fill.png", "security-system/key-on.png", GREEN],
+    ["shield-check-fill@2x.png", "security-system/key-on@2x.png", GREEN],
     // Lock: unlocked=regular+orange (attention), locked=fill+green (secure)
     ["lock-regular.png", "lock/key-unlocked.png", ORANGE],
     ["lock-regular@2x.png", "lock/key-unlocked@2x.png", ORANGE],
@@ -242,6 +263,11 @@ async function copyActionDefaults() {
     // Status (always uses fill style for visibility)
     ["info-fill.png", "status/key.png", GRAY],
     ["info-fill@2x.png", "status/key@2x.png", GRAY],
+    // Group: OFF=regular+gray, ON=fill+orange
+    ["squares-four-regular.png", "group/key-off.png", GRAY],
+    ["squares-four-regular@2x.png", "group/key-off@2x.png", GRAY],
+    ["squares-four-fill.png", "group/key-on.png", ORANGE],
+    ["squares-four-fill@2x.png", "group/key-on@2x.png", ORANGE],
   ];
 
   for (const [src, dest, color] of buttonIcons) {

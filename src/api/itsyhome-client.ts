@@ -28,6 +28,7 @@ export type DeviceState = {
   doorState?: string;
   mode?: string;
   speed?: number;
+  securityState?: number; // 0=STAY_ARM, 1=AWAY_ARM, 2=NIGHT_ARM, 3=DISARMED, 4=ALARM_TRIGGERED
 };
 
 export type SceneInfo = {
@@ -101,6 +102,14 @@ export class ItsyhomeClient {
 
   async executeScene(name: string): Promise<ActionResponse> {
     return this.get<ActionResponse>(`/scene/${encodeURIComponent(name)}`);
+  }
+
+  async armSecurity(target: string, mode: number): Promise<ActionResponse> {
+    return this.get<ActionResponse>(`/security/arm/${mode}/${encodeURIComponent(target)}`);
+  }
+
+  async disarmSecurity(target: string): Promise<ActionResponse> {
+    return this.get<ActionResponse>(`/security/disarm/${encodeURIComponent(target)}`);
   }
 
   async isAvailable(): Promise<boolean> {

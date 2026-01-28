@@ -33,22 +33,25 @@ async function fetchGroups(port) {
  * @param {object} options
  * @param {string[]} [options.types] - Only show devices of these types (e.g. ["light"])
  * @param {boolean} [options.showGroups] - Whether to show groups (default: true)
+ * @param {boolean} [options.groupsOnly] - Only show groups, hide devices (default: false)
  */
 async function populateTargetSelect(selectElement, port, currentValue, options) {
   const types = options && options.types;
   const showGroups = !options || options.showGroups !== false;
+  const groupsOnly = options && options.groupsOnly === true;
 
   selectElement.innerHTML = '<option value="">Loading...</option>';
 
   try {
-    const fetches = [fetchDevices(port)];
-    if (showGroups) fetches.push(fetchGroups(port));
+    const fetches = groupsOnly ? [Promise.resolve([]), fetchGroups(port)] : [fetchDevices(port)];
+    if (showGroups && !groupsOnly) fetches.push(fetchGroups(port));
     const [devices, groups] = await Promise.all(fetches);
     cachedDevices = devices || [];
+    cachedGroups = groups || [];
 
-    selectElement.innerHTML = '<option value="">Select a device...</option>';
+    selectElement.innerHTML = groupsOnly ? '<option value="">Select a group...</option>' : '<option value="">Select a device...</option>';
 
-    if (showGroups && groups && groups.length > 0) {
+    if ((showGroups || groupsOnly) && groups && groups.length > 0) {
       const groupOptgroup = document.createElement("optgroup");
       groupOptgroup.label = "Groups";
       for (const group of groups) {
@@ -63,28 +66,31 @@ async function populateTargetSelect(selectElement, port, currentValue, options) 
       selectElement.appendChild(groupOptgroup);
     }
 
-    // Filter by type if specified
-    const filtered = types ? devices.filter(d => types.includes(d.type)) : devices;
+    // Skip devices if groupsOnly mode
+    if (!groupsOnly) {
+      // Filter by type if specified
+      const filtered = types ? devices.filter(d => types.includes(d.type)) : devices;
 
-    // Group devices by room
-    const byRoom = {};
-    for (const device of filtered) {
-      const room = device.room || "No room";
-      if (!byRoom[room]) byRoom[room] = [];
-      byRoom[room].push(device);
-    }
-
-    for (const [room, roomDevices] of Object.entries(byRoom)) {
-      const optgroup = document.createElement("optgroup");
-      optgroup.label = room;
-      for (const device of roomDevices) {
-        const option = document.createElement("option");
-        option.value = device.room ? `${device.room}/${device.name}` : device.name;
-        option.textContent = `${device.name} (${device.type})`;
-        if (currentValue === option.value) option.selected = true;
-        optgroup.appendChild(option);
+      // Group devices by room
+      const byRoom = {};
+      for (const device of filtered) {
+        const room = device.room || "No room";
+        if (!byRoom[room]) byRoom[room] = [];
+        byRoom[room].push(device);
       }
-      selectElement.appendChild(optgroup);
+
+      for (const [room, roomDevices] of Object.entries(byRoom)) {
+        const optgroup = document.createElement("optgroup");
+        optgroup.label = room;
+        for (const device of roomDevices) {
+          const option = document.createElement("option");
+          option.value = device.room ? `${device.room}/${device.name}` : device.name;
+          option.textContent = `${device.name} (${device.type})`;
+          if (currentValue === option.value) option.selected = true;
+          optgroup.appendChild(option);
+        }
+        selectElement.appendChild(optgroup);
+      }
     }
   } catch (err) {
     selectElement.innerHTML = '<option value="">Error: Is Itsyhome running?</option>';
@@ -116,8 +122,9 @@ async function populateSceneSelect(selectElement, port, currentValue) {
   }
 }
 
-// Device cache for device lookups
+// Device and group cache for lookups
 let cachedDevices = [];
+let cachedGroups = [];
 
 function showConnectionError() {
   const notice = document.getElementById("connection-error");

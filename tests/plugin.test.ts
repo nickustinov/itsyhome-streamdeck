@@ -29,11 +29,11 @@ describe("plugin", () => {
     vi.clearAllMocks();
   });
 
-  it("registers all 8 actions and calls connect", async () => {
+  it("registers all 12 actions and calls connect", async () => {
     const streamDeck = await import("@elgato/streamdeck");
     await import("../src/plugin");
 
-    expect(streamDeck.default.actions.registerAction).toHaveBeenCalledTimes(8);
+    expect(streamDeck.default.actions.registerAction).toHaveBeenCalledTimes(12);
     expect(streamDeck.default.connect).toHaveBeenCalledTimes(1);
   });
 });

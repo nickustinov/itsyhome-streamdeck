@@ -72,6 +72,25 @@
       ]
     },
     {
+      "Name": "Fan",
+      "UUID": "com.nickustinov.itsyhome.fan",
+      "Icon": "imgs/actions/fan/icon",
+      "Tooltip": "Toggle a fan on/off",
+      "PropertyInspectorPath": "ui/fan.html",
+      "Controllers": ["Keypad"],
+      "DisableAutomaticStates": true,
+      "States": [
+        {
+          "Image": "imgs/actions/fan/key-off",
+          "Name": "Off"
+        },
+        {
+          "Image": "imgs/actions/fan/key-on",
+          "Name": "On"
+        }
+      ]
+    },
+    {
       "Name": "Lock",
       "UUID": "com.nickustinov.itsyhome.lock",
       "Icon": "imgs/actions/lock/icon",
@@ -110,6 +129,25 @@
       ]
     },
     {
+      "Name": "Humidifier",
+      "UUID": "com.nickustinov.itsyhome.humidifier",
+      "Icon": "imgs/actions/humidifier/icon",
+      "Tooltip": "Toggle a humidifier or dehumidifier on/off",
+      "PropertyInspectorPath": "ui/humidifier.html",
+      "Controllers": ["Keypad"],
+      "DisableAutomaticStates": true,
+      "States": [
+        {
+          "Image": "imgs/actions/humidifier/key-off",
+          "Name": "Off"
+        },
+        {
+          "Image": "imgs/actions/humidifier/key-on",
+          "Name": "On"
+        }
+      ]
+    },
+    {
       "Name": "Temperature/Humidity",
       "UUID": "com.nickustinov.itsyhome.status",
       "Icon": "imgs/actions/status/icon",
@@ -121,6 +159,25 @@
         {
           "Image": "imgs/actions/status/key",
           "TitleAlignment": "bottom"
+        }
+      ]
+    },
+    {
+      "Name": "Security",
+      "UUID": "com.nickustinov.itsyhome.security-system",
+      "Icon": "imgs/actions/security-system/icon",
+      "Tooltip": "Arm or disarm a security system",
+      "PropertyInspectorPath": "ui/security-system.html",
+      "Controllers": ["Keypad"],
+      "DisableAutomaticStates": true,
+      "States": [
+        {
+          "Image": "imgs/actions/security-system/key-off",
+          "Name": "Disarmed"
+        },
+        {
+          "Image": "imgs/actions/security-system/key-on",
+          "Name": "Armed"
         }
       ]
     },
@@ -155,6 +212,25 @@
         {
           "Image": "imgs/actions/garage-door/key-on",
           "Name": "Open"
+        }
+      ]
+    },
+    {
+      "Name": "Group",
+      "UUID": "com.nickustinov.itsyhome.group",
+      "Icon": "imgs/actions/group/icon",
+      "Tooltip": "Toggle a group of devices on/off",
+      "PropertyInspectorPath": "ui/group.html",
+      "Controllers": ["Keypad"],
+      "DisableAutomaticStates": true,
+      "States": [
+        {
+          "Image": "imgs/actions/group/key-off",
+          "Name": "Off"
+        },
+        {
+          "Image": "imgs/actions/group/key-on",
+          "Name": "On"
         }
       ]
     }
