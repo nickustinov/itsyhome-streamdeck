@@ -162,6 +162,26 @@ describe("ItsyhomeClient", () => {
     });
   });
 
+  describe("armSecurity", () => {
+    it("sends arm security command with mode", async () => {
+      mockResponse({ status: "success" });
+
+      const result = await client.armSecurity("Security Panel", 1);
+      expect(result).toEqual({ status: "success" });
+      expect(mockFetch).toHaveBeenCalledWith("http://127.0.0.1:8423/security/arm/1/Security%20Panel");
+    });
+  });
+
+  describe("disarmSecurity", () => {
+    it("sends disarm security command", async () => {
+      mockResponse({ status: "success" });
+
+      const result = await client.disarmSecurity("Security Panel");
+      expect(result).toEqual({ status: "success" });
+      expect(mockFetch).toHaveBeenCalledWith("http://127.0.0.1:8423/security/disarm/Security%20Panel");
+    });
+  });
+
   describe("isAvailable", () => {
     it("returns true when server responds", async () => {
       mockResponse({ rooms: 3, devices: 10 });

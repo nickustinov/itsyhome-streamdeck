@@ -74,6 +74,19 @@ describe("ExecuteSceneAction", () => {
 
       expect(ItsyhomeClient).toHaveBeenCalledWith(undefined, 9999);
     });
+
+    it("falls back to default icon when API is unavailable", async () => {
+      mockClient.listScenes.mockRejectedValue(new Error("ECONNREFUSED"));
+
+      const ev = {
+        action: createMockAction(),
+        payload: { settings: { scene: "Good Morning", port: 0 } },
+      };
+
+      await action.onWillAppear(ev as any);
+
+      expect(ev.action.setImage).toHaveBeenCalledWith("data:mock/sparkle/on");
+    });
   });
 
   describe("onDidReceiveSettings", () => {

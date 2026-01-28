@@ -372,6 +372,59 @@ describe("LightAction", () => {
 
       expect(ev.action.setImage).not.toHaveBeenCalled();
     });
+
+    it("turns off light when on and targetBrightness is set", async () => {
+      mockClient.getDeviceInfo.mockResolvedValue({
+        name: "Lamp", type: "light", reachable: true, state: { on: true, brightness: 80 },
+      });
+
+      const mockAction = createMockAction();
+      const ev = {
+        action: mockAction,
+        payload: { settings: { target: "Lamp", port: 0, targetBrightness: 50 } },
+      };
+
+      await action.onWillAppear(ev as any);
+      mockAction.setImage.mockClear();
+      mockAction.setState.mockClear();
+      mockAction.setTitle.mockClear();
+
+      mockClient.turnOff.mockResolvedValue({ status: "success" });
+
+      await action.onKeyDown(ev as any);
+
+      expect(mockClient.turnOff).toHaveBeenCalledWith("Lamp");
+      expect(mockClient.toggle).not.toHaveBeenCalled();
+      expect(mockClient.setBrightness).not.toHaveBeenCalled();
+      expect(mockAction.setState).toHaveBeenCalledWith(0);
+    });
+
+    it("sets brightness when off and targetBrightness is set", async () => {
+      mockClient.getDeviceInfo.mockResolvedValue({
+        name: "Lamp", type: "light", reachable: true, state: { on: false, brightness: 0 },
+      });
+
+      const mockAction = createMockAction();
+      const ev = {
+        action: mockAction,
+        payload: { settings: { target: "Lamp", port: 0, targetBrightness: 75 } },
+      };
+
+      await action.onWillAppear(ev as any);
+      mockAction.setImage.mockClear();
+      mockAction.setState.mockClear();
+      mockAction.setTitle.mockClear();
+
+      mockClient.setBrightness.mockResolvedValue({ status: "success" });
+
+      await action.onKeyDown(ev as any);
+
+      expect(mockClient.setBrightness).toHaveBeenCalledWith("Lamp", 75);
+      expect(mockClient.toggle).not.toHaveBeenCalled();
+      expect(mockClient.turnOff).not.toHaveBeenCalled();
+      expect(mockAction.setState).toHaveBeenCalledWith(1);
+      expect(mockAction.setTitle).toHaveBeenCalledWith("75%");
+    });
   });
 
   describe("polling", () => {
