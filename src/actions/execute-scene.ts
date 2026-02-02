@@ -70,7 +70,7 @@ export class ExecuteSceneAction extends SingletonAction<SceneSettings> {
       const scene = scenes.find((s: SceneInfo) => s.name === sceneName);
       const iconName = scene?.icon ?? "sparkle";
       const color = settings.color || DEFAULT_COLOR;
-      const icon = await renderIcon(iconName, color, true);
+      const icon = await renderIcon(iconName, color, true, undefined, "sparkle");
       await action.setImage(icon);
     } catch {
       // Fallback to default icon if API unavailable

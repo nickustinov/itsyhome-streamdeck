@@ -167,7 +167,7 @@ export class HumidifierAction extends SingletonAction<HumidifierSettings> {
       ? (settings?.onColor || DEFAULT_ON_COLOR)
       : (settings?.offColor || DEFAULT_OFF_COLOR);
 
-    const icon = await renderIcon(iconName, color, on);
+    const icon = await renderIcon(iconName, color, on, undefined, "drop");
 
     await action.setImage(icon);
     await action.setState(on ? 1 : 0);

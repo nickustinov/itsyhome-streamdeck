@@ -58,13 +58,15 @@ function createTintedSvg(
  * @param color - Hex color (e.g., "#ff9500")
  * @param isOn - true = fill (solid) variant, false = regular (outline) variant
  * @param text - Optional text to overlay on the icon
+ * @param fallbackIcon - Icon to use if iconName is not bundled (defaults to "question")
  * @returns SVG data URI for setImage()
  */
 export async function renderIcon(
   iconName: string,
   color: string,
   isOn = false,
-  text?: string
+  text?: string,
+  fallbackIcon?: string
 ): Promise<string> {
   // ON = fill (solid), OFF = regular (outline)
   const variant = isOn ? "fill" : "regular";
@@ -86,7 +88,10 @@ export async function renderIcon(
     iconCache.set(cacheKey, dataUri);
     return dataUri;
   } catch {
-    // Fallback to question mark icon
+    // Fall back to provided default, then "question", then empty SVG
+    if (fallbackIcon && iconName !== fallbackIcon) {
+      return renderIcon(fallbackIcon, color, isOn, text);
+    }
     if (iconName !== "question") {
       return renderIcon("question", color, isOn, text);
     }

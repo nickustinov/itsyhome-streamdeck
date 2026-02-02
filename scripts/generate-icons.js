@@ -3,14 +3,18 @@
 /**
  * Generate PNG icons from Phosphor SVGs for Stream Deck plugin.
  *
+ * Only generates icons from the suggested icon sets in the Itsyhome macOS app
+ * (per accessory type, scene, and group). Custom icons outside this set fall
+ * back to the default icon for the device type at runtime.
+ *
  * - Regular variants become "off" state (white fill)
  * - Fill variants become "on" state (yellow/orange fill, solid icon style)
  * - Icons are sized smaller to leave room for labels below
- * - Outputs at 72x72 and 144x144 (@2x) canvas sizes
+ * - Outputs at 144x144 (@2x) canvas size only
  */
 
 import sharp from "sharp";
-import { readdir, readFile, mkdir, rm, stat } from "node:fs/promises";
+import { readFile, mkdir, rm, stat, readdir, access } from "node:fs/promises";
 import { join, basename } from "node:path";
 import { fileURLToPath } from "node:url";
 import { dirname } from "node:path";
@@ -24,10 +28,52 @@ const OUTPUT_PATH = join(__dirname, "../com.nickustinov.itsyhome.sdPlugin/imgs/i
 const ICON_COLOR = "#ffffff"; // All icons white, tinted at runtime
 
 // Canvas sizes and icon sizes within them (moved up from center)
+// Only generate @2x — Stream Deck downscales for standard displays
 const SIZES = [
-  { canvas: 72, icon: 52, verticalOffset: -8, suffix: "" },
   { canvas: 144, icon: 104, verticalOffset: -16, suffix: "@2x" },
 ];
+
+// Only bundle icons from the suggested sets in the Itsyhome macOS app.
+// Matches accessoryIconConfigs, suggestedSceneIcons, and suggestedGroupIcons
+// from PhosphorIcon.swift. Icons outside this set fall back to defaults.
+const SUGGESTED_ICONS = new Set([
+  // Lightbulb
+  "lightbulb", "lightbulb-filament", "sun", "lamp", "lamp-pendant", "headlights",
+  // Switch
+  "power", "toggle-left", "toggle-right", "plug", "plug-charging", "plugs",
+  // Thermostat / AC
+  "thermometer", "thermometer-cold", "thermometer-hot", "thermometer-simple",
+  "snowflake", "fire", "fire-simple", "arrows-left-right",
+  // Lock
+  "lock", "lock-key", "lock-simple", "lock-laminated", "keyhole", "key", "lock-open",
+  // Fan
+  "fan", "wind",
+  // Blinds / window covering
+  "arrows-out-line-vertical", "caret-up-down", "list",
+  // Door / window
+  "door-open", "door", "browser", "frame-corners",
+  // Garage door
+  "garage", "car", "car-profile", "car-simple", "warning",
+  // Humidifier
+  "drop-half", "drop", "drop-simple", "drop-half-bottom",
+  // Air purifier / valve / faucet
+  "pipe", "shower",
+  // Slats
+  "equals", "rows",
+  // Security system
+  "shield", "shield-check", "shield-star", "shield-warning",
+  // Scenes
+  "sparkle", "sun-horizon", "moon", "moon-stars",
+  "house", "airplane-takeoff", "film-strip", "confetti", "coffee",
+  "briefcase", "fork-knife", "book-open", "heart",
+  "game-controller", "music-notes", "television", "bed",
+  // Groups
+  "squares-four", "grid-four", "stack", "folder", "tag", "couch",
+  // Status
+  "info",
+  // Fallback
+  "question",
+]);
 
 /**
  * Replace currentColor in SVG with the specified color.
@@ -103,7 +149,7 @@ async function processIcon(iconName, regularPath, fillPath) {
  * Main entry point.
  */
 async function main() {
-  console.log("Generating Stream Deck icons from Phosphor SVGs...\n");
+  console.log(`Generating ${SUGGESTED_ICONS.size} suggested icons from Phosphor SVGs...\n`);
 
   // Clean and recreate output directory
   try {
@@ -113,32 +159,23 @@ async function main() {
   }
   await mkdir(OUTPUT_PATH, { recursive: true });
 
-  // Get list of regular icons
   const regularDir = join(PHOSPHOR_PATH, "regular");
   const fillDir = join(PHOSPHOR_PATH, "fill");
-  const regularFiles = await readdir(regularDir);
 
   // Build fill lookup for fast access (fill files have -fill suffix)
   const fillFiles = new Set(await readdir(fillDir));
 
   let processed = 0;
-  const total = regularFiles.filter(f => f.endsWith(".svg")).length;
+  const total = SUGGESTED_ICONS.size;
 
-  for (const file of regularFiles) {
-    if (!file.endsWith(".svg")) continue;
-
-    const iconName = basename(file, ".svg");
-    const regularPath = join(regularDir, file);
-    // Fill files have -fill suffix: lightbulb.svg -> lightbulb-fill.svg
+  for (const iconName of SUGGESTED_ICONS) {
+    const regularPath = join(regularDir, `${iconName}.svg`);
     const fillFileName = `${iconName}-fill.svg`;
     const fillPath = fillFiles.has(fillFileName) ? join(fillDir, fillFileName) : null;
 
     try {
       await processIcon(iconName, regularPath, fillPath);
       processed++;
-      if (processed % 100 === 0) {
-        console.log(`Processed ${processed}/${total} icons...`);
-      }
     } catch (err) {
       console.error(`Error processing ${iconName}: ${err.message}`);
     }
@@ -211,67 +248,68 @@ async function copyActionDefaults() {
   const GREEN = "#30d158";
   const BLUE = "#007aff";
   const TEAL = "#30b0c7";
+  // All source icons are @2x only; 1x action defaults are resized from @2x
   const buttonIcons = [
     // Toggle - lightbulb: OFF=regular+gray, ON=fill+orange
-    ["lightbulb-regular.png", "toggle/key-off.png", GRAY],
+    ["lightbulb-regular@2x.png", "toggle/key-off.png", GRAY, 72],
     ["lightbulb-regular@2x.png", "toggle/key-off@2x.png", GRAY],
-    ["lightbulb-fill.png", "toggle/key-on.png", ORANGE],
+    ["lightbulb-fill@2x.png", "toggle/key-on.png", ORANGE, 72],
     ["lightbulb-fill@2x.png", "toggle/key-on@2x.png", ORANGE],
     // Scene - sparkle (always "on" style = fill)
-    ["sparkle-fill.png", "scene/key.png", ORANGE],
+    ["sparkle-fill@2x.png", "scene/key.png", ORANGE, 72],
     ["sparkle-fill@2x.png", "scene/key@2x.png", ORANGE],
     // Brightness - lightbulb: OFF=regular+gray, ON=fill+orange
-    ["lightbulb-regular.png", "brightness/key-off.png", GRAY],
+    ["lightbulb-regular@2x.png", "brightness/key-off.png", GRAY, 72],
     ["lightbulb-regular@2x.png", "brightness/key-off@2x.png", GRAY],
-    ["lightbulb-fill.png", "brightness/key-on.png", ORANGE],
+    ["lightbulb-fill@2x.png", "brightness/key-on.png", ORANGE, 72],
     ["lightbulb-fill@2x.png", "brightness/key-on@2x.png", ORANGE],
     // Fan: OFF=regular+gray, ON=fill+blue
-    ["fan-regular.png", "fan/key-off.png", GRAY],
+    ["fan-regular@2x.png", "fan/key-off.png", GRAY, 72],
     ["fan-regular@2x.png", "fan/key-off@2x.png", GRAY],
-    ["fan-fill.png", "fan/key-on.png", BLUE],
+    ["fan-fill@2x.png", "fan/key-on.png", BLUE, 72],
     ["fan-fill@2x.png", "fan/key-on@2x.png", BLUE],
     // Humidifier: OFF=regular+gray, ON=fill+teal
-    ["drop-regular.png", "humidifier/key-off.png", GRAY],
+    ["drop-regular@2x.png", "humidifier/key-off.png", GRAY, 72],
     ["drop-regular@2x.png", "humidifier/key-off@2x.png", GRAY],
-    ["drop-fill.png", "humidifier/key-on.png", TEAL],
+    ["drop-fill@2x.png", "humidifier/key-on.png", TEAL, 72],
     ["drop-fill@2x.png", "humidifier/key-on@2x.png", TEAL],
     // Security System: disarmed=regular+gray, armed=fill+green
-    ["shield-check-regular.png", "security-system/key-off.png", GRAY],
+    ["shield-check-regular@2x.png", "security-system/key-off.png", GRAY, 72],
     ["shield-check-regular@2x.png", "security-system/key-off@2x.png", GRAY],
-    ["shield-check-fill.png", "security-system/key-on.png", GREEN],
+    ["shield-check-fill@2x.png", "security-system/key-on.png", GREEN, 72],
     ["shield-check-fill@2x.png", "security-system/key-on@2x.png", GREEN],
     // Lock: unlocked=regular+orange (attention), locked=fill+green (secure)
-    ["lock-regular.png", "lock/key-unlocked.png", ORANGE],
+    ["lock-regular@2x.png", "lock/key-unlocked.png", ORANGE, 72],
     ["lock-regular@2x.png", "lock/key-unlocked@2x.png", ORANGE],
-    ["lock-fill.png", "lock/key-locked.png", GREEN],
+    ["lock-fill@2x.png", "lock/key-locked.png", GREEN, 72],
     ["lock-fill@2x.png", "lock/key-locked@2x.png", GREEN],
     // Garage door: closed=regular+gray, open=fill+orange
-    ["garage-regular.png", "garage-door/key-closed.png", GRAY],
+    ["garage-regular@2x.png", "garage-door/key-closed.png", GRAY, 72],
     ["garage-regular@2x.png", "garage-door/key-closed@2x.png", GRAY],
-    ["garage-fill.png", "garage-door/key-open.png", ORANGE],
+    ["garage-fill@2x.png", "garage-door/key-open.png", ORANGE, 72],
     ["garage-fill@2x.png", "garage-door/key-open@2x.png", ORANGE],
     // Blinds: closed=regular+gray, open=fill+orange
-    ["arrows-out-line-vertical-regular.png", "blinds/key-closed.png", GRAY],
+    ["arrows-out-line-vertical-regular@2x.png", "blinds/key-closed.png", GRAY, 72],
     ["arrows-out-line-vertical-regular@2x.png", "blinds/key-closed@2x.png", GRAY],
-    ["arrows-out-line-vertical-fill.png", "blinds/key-open.png", ORANGE],
+    ["arrows-out-line-vertical-fill@2x.png", "blinds/key-open.png", ORANGE, 72],
     ["arrows-out-line-vertical-fill@2x.png", "blinds/key-open@2x.png", ORANGE],
     // Thermostat: OFF=regular+gray, ON=fill+orange
-    ["thermometer-regular.png", "thermostat/key-off.png", GRAY],
+    ["thermometer-regular@2x.png", "thermostat/key-off.png", GRAY, 72],
     ["thermometer-regular@2x.png", "thermostat/key-off@2x.png", GRAY],
-    ["thermometer-fill.png", "thermostat/key-on.png", ORANGE],
+    ["thermometer-fill@2x.png", "thermostat/key-on.png", ORANGE, 72],
     ["thermometer-fill@2x.png", "thermostat/key-on@2x.png", ORANGE],
     // Status (always uses fill style for visibility)
-    ["info-fill.png", "status/key.png", GRAY],
+    ["info-fill@2x.png", "status/key.png", GRAY, 72],
     ["info-fill@2x.png", "status/key@2x.png", GRAY],
     // Group: OFF=regular+gray, ON=fill+orange
-    ["squares-four-regular.png", "group/key-off.png", GRAY],
+    ["squares-four-regular@2x.png", "group/key-off.png", GRAY, 72],
     ["squares-four-regular@2x.png", "group/key-off@2x.png", GRAY],
-    ["squares-four-fill.png", "group/key-on.png", ORANGE],
+    ["squares-four-fill@2x.png", "group/key-on.png", ORANGE, 72],
     ["squares-four-fill@2x.png", "group/key-on@2x.png", ORANGE],
   ];
 
-  for (const [src, dest, color] of buttonIcons) {
-    await tintIcon(join(OUTPUT_PATH, src), join(actionsPath, dest), color);
+  for (const [src, dest, color, resizeTo] of buttonIcons) {
+    await tintIcon(join(OUTPUT_PATH, src), join(actionsPath, dest), color, resizeTo);
   }
 
   console.log(`Generated ${listIcons.length * 2} action list icons and ${buttonIcons.length} button state icons`);
@@ -280,18 +318,23 @@ async function copyActionDefaults() {
 /**
  * Tint a white PNG icon to a specific color using color matrix.
  */
-async function tintIcon(srcPath, destPath, hexColor) {
+async function tintIcon(srcPath, destPath, hexColor, resizeTo) {
   const r = parseInt(hexColor.slice(1, 3), 16) / 255;
   const g = parseInt(hexColor.slice(3, 5), 16) / 255;
   const b = parseInt(hexColor.slice(5, 7), 16) / 255;
 
-  await sharp(srcPath)
+  let pipeline = sharp(srcPath)
     .recomb([
       [r, 0, 0],
       [0, g, 0],
       [0, 0, b],
-    ])
-    .toFile(destPath);
+    ]);
+
+  if (resizeTo) {
+    pipeline = pipeline.resize(resizeTo, resizeTo);
+  }
+
+  await pipeline.toFile(destPath);
 }
 
 main().catch(console.error);

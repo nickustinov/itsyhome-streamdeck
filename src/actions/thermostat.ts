@@ -187,7 +187,7 @@ export class ThermostatAction extends SingletonAction<ThermostatSettings> {
     const color = isOn
       ? (mode ? MODE_COLORS[mode] : MODE_COLORS.auto) || MODE_COLORS.auto
       : (settings?.offColor || DEFAULT_OFF_COLOR);
-    const icon = await renderIcon(iconName, color, isOn);
+    const icon = await renderIcon(iconName, color, isOn, undefined, "thermometer");
     await action.setImage(icon);
     await action.setState(isOn ? 1 : 0);
   }

@@ -195,7 +195,7 @@ export class GroupAction extends SingletonAction<GroupSettings> {
       ? (settings?.onColor || DEFAULT_ON_COLOR)
       : (settings?.offColor || DEFAULT_OFF_COLOR);
 
-    const icon = await renderIcon(iconName, color, on);
+    const icon = await renderIcon(iconName, color, on, undefined, "squares-four");
 
     await action.setImage(icon);
     await action.setState(on ? 1 : 0);

@@ -15,13 +15,13 @@ const DEFAULT_ON_COLOR = "#ff9500"; // Orange
 
 const DEVICE_TYPE_FALLBACK: Record<string, string> = {
   "light": "lightbulb",
-  "switch": "switch",
+  "switch": "power",
   "outlet": "plug",
   "fan": "fan",
   "thermostat": "thermometer",
   "heater-cooler": "thermometer",
   "lock": "lock",
-  "blinds": "venetian-mask",
+  "blinds": "arrows-out-line-vertical",
   "garage-door": "garage",
   "temperature-sensor": "thermometer-simple",
   "humidity-sensor": "drop",
@@ -168,7 +168,7 @@ export class ToggleDeviceAction extends SingletonAction<ToggleSettings> {
   ): Promise<void> {
     // Determine icon name
     const isGroup = target.startsWith("group.") || target.includes("/group.");
-    const iconName = apiIcon ?? (isGroup ? "squares-four" : DEVICE_TYPE_FALLBACK[deviceType]) ?? "question";
+    const iconName = apiIcon ?? (isGroup ? "squares-four" : DEVICE_TYPE_FALLBACK[deviceType]) ?? "lightbulb";
 
     // Get color based on state
     const color = isOn
@@ -176,7 +176,7 @@ export class ToggleDeviceAction extends SingletonAction<ToggleSettings> {
       : (settings?.offColor || DEFAULT_OFF_COLOR);
 
     // Render tinted icon
-    const icon = await renderIcon(iconName, color, isOn);
+    const icon = await renderIcon(iconName, color, isOn, undefined, "lightbulb");
 
     await action.setImage(icon);
     await action.setState(isOn ? 1 : 0);

@@ -110,7 +110,7 @@ export class StatusAction extends SingletonAction<StatusSettings> {
       const iconName = device.icon ?? DEVICE_TYPE_FALLBACK[device.type] ?? "info";
       const defaultColor = device.type === "humidity-sensor" ? DEFAULT_HUMIDITY_COLOR : DEFAULT_TEMPERATURE_COLOR;
       const color = settings.color || defaultColor;
-      const icon = await renderIcon(iconName, color, true);
+      const icon = await renderIcon(iconName, color, true, undefined, "info");
       await action.setImage(icon);
       await action.setTitle(title);
     } catch {

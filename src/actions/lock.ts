@@ -152,7 +152,7 @@ export class LockAction extends SingletonAction<LockSettings> {
     const color = isLocked
       ? (settings?.lockedColor || DEFAULT_LOCKED_COLOR)
       : (settings?.unlockedColor || DEFAULT_UNLOCKED_COLOR);
-    const icon = await renderIcon(iconName, color, isLocked);
+    const icon = await renderIcon(iconName, color, isLocked, undefined, "lock");
     await action.setImage(icon);
     await action.setState(isLocked ? 1 : 0);
   }

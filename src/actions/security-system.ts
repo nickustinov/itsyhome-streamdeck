@@ -211,7 +211,7 @@ export class SecuritySystemAction extends SingletonAction<SecuritySystemSettings
       isOn = true;
     }
 
-    const icon = await renderIcon(iconName, color, isOn);
+    const icon = await renderIcon(iconName, color, isOn, undefined, "shield-check");
 
     await action.setImage(icon);
     await action.setState(isOn ? 1 : 0);

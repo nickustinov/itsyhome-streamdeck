@@ -124,7 +124,7 @@ export class BlindsAction extends SingletonAction<BlindsSettings> {
     const color = isOpen
       ? (settings.openColor || DEFAULT_OPEN_COLOR)
       : (settings.closedColor || DEFAULT_CLOSED_COLOR);
-    const icon = await renderIcon(iconName, color, isOpen);
+    const icon = await renderIcon(iconName, color, isOpen, undefined, "arrows-out-line-vertical");
     await action.setImage(icon);
   }
 
