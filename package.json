@@ -2,6 +2,7 @@
   "name": "itsyhome-streamdeck",
   "version": "1.0.0",
   "description": "Stream Deck plugin for Itsyhome - control HomeKit devices from your Stream Deck",
+  "license": "MIT",
   "private": true,
   "type": "module",
   "scripts": {

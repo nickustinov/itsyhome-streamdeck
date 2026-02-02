@@ -9,6 +9,7 @@
   "Icon": "imgs/plugin/marketplace",
   "CodePath": "bin/plugin.js",
   "SDKVersion": 3,
+  "License": "MIT",
   "Software": {
     "MinimumVersion": "6.9"
   },
@@ -29,7 +30,9 @@
       "Icon": "imgs/actions/toggle/icon",
       "Tooltip": "Toggle a switch or outlet on/off",
       "PropertyInspectorPath": "ui/toggle.html",
-      "Controllers": ["Keypad"],
+      "Controllers": [
+        "Keypad"
+      ],
       "DisableAutomaticStates": true,
       "States": [
         {
@@ -48,7 +51,9 @@
       "Icon": "imgs/actions/scene/icon",
       "Tooltip": "Execute a HomeKit scene",
       "PropertyInspectorPath": "ui/scene.html",
-      "Controllers": ["Keypad"],
+      "Controllers": [
+        "Keypad"
+      ],
       "States": [
         {
           "Image": "imgs/actions/scene/key",
@@ -62,7 +67,9 @@
       "Icon": "imgs/actions/brightness/icon",
       "Tooltip": "Toggle a light on/off with optional brightness",
       "PropertyInspectorPath": "ui/brightness.html",
-      "Controllers": ["Keypad"],
+      "Controllers": [
+        "Keypad"
+      ],
       "DisableAutomaticStates": true,
       "States": [
         {
@@ -77,7 +84,9 @@
       "Icon": "imgs/actions/fan/icon",
       "Tooltip": "Toggle a fan on/off",
       "PropertyInspectorPath": "ui/fan.html",
-      "Controllers": ["Keypad"],
+      "Controllers": [
+        "Keypad"
+      ],
       "DisableAutomaticStates": true,
       "States": [
         {
@@ -96,7 +105,9 @@
       "Icon": "imgs/actions/lock/icon",
       "Tooltip": "Toggle a lock between locked and unlocked",
       "PropertyInspectorPath": "ui/lock.html",
-      "Controllers": ["Keypad"],
+      "Controllers": [
+        "Keypad"
+      ],
       "DisableAutomaticStates": true,
       "States": [
         {
@@ -115,7 +126,9 @@
       "Icon": "imgs/actions/thermostat/icon",
       "Tooltip": "Toggle AC or thermostat on/off",
       "PropertyInspectorPath": "ui/thermostat.html",
-      "Controllers": ["Keypad"],
+      "Controllers": [
+        "Keypad"
+      ],
       "DisableAutomaticStates": true,
       "States": [
         {
@@ -134,7 +147,9 @@
       "Icon": "imgs/actions/humidifier/icon",
       "Tooltip": "Toggle a humidifier or dehumidifier on/off",
       "PropertyInspectorPath": "ui/humidifier.html",
-      "Controllers": ["Keypad"],
+      "Controllers": [
+        "Keypad"
+      ],
       "DisableAutomaticStates": true,
       "States": [
         {
@@ -153,7 +168,9 @@
       "Icon": "imgs/actions/status/icon",
       "Tooltip": "Display temperature or humidity sensor readings",
       "PropertyInspectorPath": "ui/status.html",
-      "Controllers": ["Keypad"],
+      "Controllers": [
+        "Keypad"
+      ],
       "DisableAutomaticStates": true,
       "States": [
         {
@@ -168,7 +185,9 @@
       "Icon": "imgs/actions/security-system/icon",
       "Tooltip": "Arm or disarm a security system",
       "PropertyInspectorPath": "ui/security-system.html",
-      "Controllers": ["Keypad"],
+      "Controllers": [
+        "Keypad"
+      ],
       "DisableAutomaticStates": true,
       "States": [
         {
@@ -187,7 +206,9 @@
       "Icon": "imgs/actions/blinds/icon",
       "Tooltip": "Open or close blinds",
       "PropertyInspectorPath": "ui/blinds.html",
-      "Controllers": ["Keypad"],
+      "Controllers": [
+        "Keypad"
+      ],
       "DisableAutomaticStates": true,
       "States": [
         {
@@ -202,7 +223,9 @@
       "Icon": "imgs/actions/garage-door/icon",
       "Tooltip": "Open or close a garage door",
       "PropertyInspectorPath": "ui/garage-door.html",
-      "Controllers": ["Keypad"],
+      "Controllers": [
+        "Keypad"
+      ],
       "DisableAutomaticStates": true,
       "States": [
         {
@@ -221,7 +244,9 @@
       "Icon": "imgs/actions/group/icon",
       "Tooltip": "Toggle a group of devices on/off",
       "PropertyInspectorPath": "ui/group.html",
-      "Controllers": ["Keypad"],
+      "Controllers": [
+        "Keypad"
+      ],
       "DisableAutomaticStates": true,
       "States": [
         {

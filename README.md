@@ -162,6 +162,10 @@ Icons are from [Phosphor Icons](https://phosphoricons.com/) (MIT licensed), rend
 | AC cool mode | `#4FC3F7` | Snowflake |
 | AC auto mode | `#AB47BC` | Thermometer |
 
+## License
+
+MIT — see [LICENSE](LICENSE) for details.
+
 ## Known issues
 
 - **Limited icon set** — the plugin only bundles icons from the suggested icon lists in the Itsyhome macOS app (per accessory type, scene, and group). If you assign a custom icon in the macOS app that is outside the suggested set, the Stream Deck plugin will display the default icon for that device type instead.
