@@ -64,6 +64,17 @@ describe("icon-renderer", () => {
       expect(readFile).toHaveBeenCalledTimes(2);
     });
 
+    it("falls back to provided fallback icon when file not found", async () => {
+      vi.mocked(readFile)
+        .mockRejectedValueOnce(new Error("ENOENT"))
+        .mockResolvedValueOnce(Buffer.from("fallback-icon"));
+
+      const result = await renderIcon("nonexistent", "#ff9500", false, undefined, "lightbulb");
+
+      expect(readFile).toHaveBeenCalledWith(expect.stringContaining("lightbulb-regular@2x.png"));
+      expect(result).toMatch(/^data:image\/svg\+xml,/);
+    });
+
     it("falls back to question icon when file not found", async () => {
       vi.mocked(readFile)
         .mockRejectedValueOnce(new Error("ENOENT"))
