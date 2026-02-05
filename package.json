@@ -18,6 +18,8 @@
   "devDependencies": {
     "@elgato/streamdeck": "^2.0.0",
     "@phosphor-icons/core": "^2.1.1",
+    "@rollup/plugin-commonjs": "^29.0.0",
+    "@rollup/plugin-json": "^6.1.0",
     "@rollup/plugin-node-resolve": "^16.0.0",
     "@rollup/plugin-typescript": "^12.0.0",
     "@types/node": "^25.0.10",

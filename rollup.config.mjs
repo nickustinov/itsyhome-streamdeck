@@ -1,5 +1,7 @@
 import resolve from "@rollup/plugin-node-resolve";
 import typescript from "@rollup/plugin-typescript";
+import commonjs from "@rollup/plugin-commonjs";
+import json from "@rollup/plugin-json";
 
 export default {
   input: "src/plugin.ts",
@@ -9,11 +11,12 @@ export default {
     sourcemap: true,
   },
   plugins: [
-    resolve(),
+    resolve({ preferBuiltins: true }),
+    commonjs(),
+    json(),
     typescript({
       tsconfig: "./tsconfig.json",
       sourceMap: true,
     }),
   ],
-  external: ["@elgato/streamdeck"],
 };
