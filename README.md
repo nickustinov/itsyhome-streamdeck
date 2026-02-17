@@ -2,7 +2,7 @@
 
 [![Tests](https://github.com/nickustinov/itsyhome-streamdeck/actions/workflows/test.yml/badge.svg)](https://github.com/nickustinov/itsyhome-streamdeck/actions/workflows/test.yml)
 
-Stream Deck plugin for [Itsyhome](https://itsyhome.app) — control your HomeKit devices directly from your Elgato Stream Deck.
+Stream Deck plugin for [Itsyhome](https://itsyhome.app) — control your HomeKit and Home Assistant devices directly from your Elgato Stream Deck.
 
 ![Itsyhome Stream Deck plugin](itsyhome-streamdeck.png)
 
@@ -13,7 +13,7 @@ Requires **Itsyhome Pro** with the webhook server enabled (runs on `localhost:84
 | Action | Description |
 |--------|-------------|
 | **Switch/Outlet** | Toggle a switch or outlet on/off |
-| **Execute scene** | Trigger a HomeKit scene |
+| **Execute scene** | Trigger a scene |
 | **Light** | Toggle a light on/off. Optional target brightness when turning on. Shows current brightness |
 | **Fan** | Toggle a fan on/off. Shows current speed level |
 | **Humidifier** | Toggle a humidifier/dehumidifier on/off. Shows current humidity % |
@@ -100,7 +100,7 @@ src/
     itsyhome-client.ts   — HTTP client for the Itsyhome webhook API
   actions/
     toggle-device.ts     — Toggle switch/outlet on/off
-    execute-scene.ts     — Execute a HomeKit scene
+    execute-scene.ts     — Execute a scene
     light.ts             — Light toggle with optional target brightness
     fan.ts               — Fan toggle with speed display
     humidifier.ts        — Humidifier toggle with humidity display

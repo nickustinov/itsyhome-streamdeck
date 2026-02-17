@@ -3,7 +3,7 @@
   "Name": "Itsyhome",
   "Version": "1.1.0.0",
   "Author": "Nick Ustinov",
-  "Description": "Control your HomeKit devices from Stream Deck via Itsyhome",
+  "Description": "Control your HomeKit and Home Assistant devices from Stream Deck via Itsyhome",
   "Category": "Itsyhome",
   "CategoryIcon": "imgs/plugin/category-icon",
   "Icon": "imgs/plugin/marketplace",
@@ -48,7 +48,7 @@
       "Name": "Scene",
       "UUID": "com.nickustinov.itsyhome.scene",
       "Icon": "imgs/actions/scene/icon",
-      "Tooltip": "Execute a HomeKit scene",
+      "Tooltip": "Execute a scene",
       "PropertyInspectorPath": "ui/scene.html",
       "Controllers": [
         "Keypad"
