@@ -79,6 +79,17 @@ ln -sf "$(pwd)/com.nickustinov.itsyhome.sdPlugin" \
 
 Then restart the Stream Deck app to load the plugin.
 
+### Release
+
+Build the plugin and package it for the marketplace:
+
+```sh
+npm run build
+streamdeck pack com.nickustinov.itsyhome.sdPlugin -f -o .
+```
+
+This creates `com.nickustinov.itsyhome.streamDeckPlugin` which can be uploaded to the [Elgato Marketplace](https://marketplace.elgato.com) via Maker Console.
+
 ## Architecture
 
 ```
