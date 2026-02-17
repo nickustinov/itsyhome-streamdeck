@@ -158,7 +158,7 @@ export class GarageDoorAction extends SingletonAction<GarageDoorSettings> {
     const color = isOpen
       ? (settings?.openColor || DEFAULT_OPEN_COLOR)
       : (settings?.closedColor || DEFAULT_CLOSED_COLOR);
-    const icon = await renderIcon(iconName, color, isOpen, undefined, "garage");
+    const icon = await renderIcon(iconName, color, !isOpen, undefined, "garage");
     await action.setImage(icon);
     await action.setState(isOpen ? 1 : 0);
   }

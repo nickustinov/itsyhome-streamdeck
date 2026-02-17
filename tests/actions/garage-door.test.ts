@@ -50,10 +50,10 @@ describe("GarageDoorAction", () => {
 
       await action.onWillAppear(ev as any);
 
-      // First call is the initial "closed" state
-      expect(ev.action.setImage).toHaveBeenNthCalledWith(1, "data:mock/garage/off");
-      // Second call is the server response "open"
-      expect(ev.action.setImage).toHaveBeenNthCalledWith(2, "data:mock/garage/on");
+      // First call is the initial "closed" state (filled)
+      expect(ev.action.setImage).toHaveBeenNthCalledWith(1, "data:mock/garage/on");
+      // Second call is the server response "open" (outline)
+      expect(ev.action.setImage).toHaveBeenNthCalledWith(2, "data:mock/garage/off");
     });
 
     it("uses custom port", async () => {
@@ -79,7 +79,7 @@ describe("GarageDoorAction", () => {
 
       await action.onWillAppear(ev as any);
 
-      expect(ev.action.setImage).toHaveBeenCalledWith("data:mock/garage/off");
+      expect(ev.action.setImage).toHaveBeenCalledWith("data:mock/garage/on");
       expect(mockClient.getDeviceInfo).not.toHaveBeenCalled();
     });
 
@@ -95,7 +95,7 @@ describe("GarageDoorAction", () => {
 
       await action.onWillAppear(ev as any);
 
-      expect(ev.action.setImage).toHaveBeenNthCalledWith(2, "data:mock/garage/on");
+      expect(ev.action.setImage).toHaveBeenNthCalledWith(2, "data:mock/garage/off");
       expect(ev.action.setState).toHaveBeenLastCalledWith(1);
     });
 
@@ -111,7 +111,7 @@ describe("GarageDoorAction", () => {
 
       await action.onWillAppear(ev as any);
 
-      expect(ev.action.setImage).toHaveBeenNthCalledWith(2, "data:mock/garage/off");
+      expect(ev.action.setImage).toHaveBeenNthCalledWith(2, "data:mock/garage/on");
       expect(ev.action.setState).toHaveBeenLastCalledWith(0);
     });
 
@@ -210,7 +210,7 @@ describe("GarageDoorAction", () => {
 
       await action.onDidReceiveSettings(ev as any);
 
-      expect(ev.action.setImage).toHaveBeenCalledWith("data:mock/garage/off");
+      expect(ev.action.setImage).toHaveBeenCalledWith("data:mock/garage/on");
       expect(ev.action.setState).toHaveBeenCalledWith(0);
     });
 
@@ -262,7 +262,7 @@ describe("GarageDoorAction", () => {
 
       await action.onKeyDown(ev as any);
 
-      expect(mockAction.setImage).toHaveBeenCalledWith("data:mock/garage/on");
+      expect(mockAction.setImage).toHaveBeenCalledWith("data:mock/garage/off");
       expect(mockAction.setState).toHaveBeenCalledWith(1);
     });
 
@@ -286,7 +286,7 @@ describe("GarageDoorAction", () => {
 
       await action.onKeyDown(ev as any);
 
-      expect(mockAction.setImage).toHaveBeenCalledWith("data:mock/garage/off");
+      expect(mockAction.setImage).toHaveBeenCalledWith("data:mock/garage/on");
       expect(mockAction.setState).toHaveBeenCalledWith(0);
     });
 
@@ -311,7 +311,7 @@ describe("GarageDoorAction", () => {
       await action.onKeyDown(ev as any);
 
       // closing is treated as closed/closing → should toggle to open
-      expect(mockAction.setImage).toHaveBeenCalledWith("data:mock/garage/on");
+      expect(mockAction.setImage).toHaveBeenCalledWith("data:mock/garage/off");
       expect(mockAction.setState).toHaveBeenCalledWith(1);
     });
 
@@ -327,7 +327,7 @@ describe("GarageDoorAction", () => {
       await action.onKeyDown(ev as any);
 
       // default "closed" → opens
-      expect(ev.action.setImage).toHaveBeenCalledWith("data:mock/garage/on");
+      expect(ev.action.setImage).toHaveBeenCalledWith("data:mock/garage/off");
       expect(ev.action.setState).toHaveBeenCalledWith(1);
     });
 

@@ -210,7 +210,7 @@ async function copyActionDefaults() {
 
   // Action list icons (28x28, 56x56 @2x) - [svg name, dest folder, color]
   const listIcons = [
-    ["lightbulb", "toggle", WHITE],
+    ["plug", "toggle", WHITE],
     ["sparkle", "scene", WHITE],
     ["lightbulb", "brightness", WHITE],
     ["fan", "fan", WHITE],
@@ -250,11 +250,11 @@ async function copyActionDefaults() {
   const TEAL = "#30b0c7";
   // All source icons are @2x only; 1x action defaults are resized from @2x
   const buttonIcons = [
-    // Toggle - lightbulb: OFF=regular+gray, ON=fill+orange
-    ["lightbulb-regular@2x.png", "toggle/key-off.png", GRAY, 72],
-    ["lightbulb-regular@2x.png", "toggle/key-off@2x.png", GRAY],
-    ["lightbulb-fill@2x.png", "toggle/key-on.png", ORANGE, 72],
-    ["lightbulb-fill@2x.png", "toggle/key-on@2x.png", ORANGE],
+    // Toggle - plug: OFF=regular+gray, ON=fill+orange
+    ["plug-regular@2x.png", "toggle/key-off.png", GRAY, 72],
+    ["plug-regular@2x.png", "toggle/key-off@2x.png", GRAY],
+    ["plug-fill@2x.png", "toggle/key-on.png", ORANGE, 72],
+    ["plug-fill@2x.png", "toggle/key-on@2x.png", ORANGE],
     // Scene - sparkle (always "on" style = fill)
     ["sparkle-fill@2x.png", "scene/key.png", ORANGE, 72],
     ["sparkle-fill@2x.png", "scene/key@2x.png", ORANGE],

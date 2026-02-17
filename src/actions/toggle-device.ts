@@ -168,7 +168,7 @@ export class ToggleDeviceAction extends SingletonAction<ToggleSettings> {
   ): Promise<void> {
     // Determine icon name
     const isGroup = target.startsWith("group.") || target.includes("/group.");
-    const iconName = apiIcon ?? (isGroup ? "squares-four" : DEVICE_TYPE_FALLBACK[deviceType]) ?? "lightbulb";
+    const iconName = apiIcon ?? (isGroup ? "squares-four" : DEVICE_TYPE_FALLBACK[deviceType]) ?? "power";
 
     // Get color based on state
     const color = isOn
@@ -176,7 +176,7 @@ export class ToggleDeviceAction extends SingletonAction<ToggleSettings> {
       : (settings?.offColor || DEFAULT_OFF_COLOR);
 
     // Render tinted icon
-    const icon = await renderIcon(iconName, color, isOn, undefined, "lightbulb");
+    const icon = await renderIcon(iconName, color, isOn, undefined, "power");
 
     await action.setImage(icon);
     await action.setState(isOn ? 1 : 0);

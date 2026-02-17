@@ -22,7 +22,7 @@ Requires **Itsyhome Pro** with the webhook server enabled (runs on `localhost:84
 | **Status** | Display-only — shows current temperature or humidity from sensors |
 | **Blinds** | Open or close blinds. Direction-specific arrow icon. Shows current position % |
 | **Garage door** | Open/close a garage door. Green car (closed), orange car (open). 30s optimistic hold |
-| **Security system** | Arm/disarm a security system. User selects arm mode (Stay/Away/Night). Shows current state |
+| **Security system** | Arm/disarm a security system. User selects arm mode (Stay/Away/Night). Shows current state. HomeKit only |
 | **Group** | Turn on/off a device group. Shows partial count (e.g. "3/5") when some devices are on |
 
 ## Features
