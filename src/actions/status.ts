@@ -20,8 +20,13 @@ type StatusSettings = {
   target: string;
   port: number;
   label: string;
+  unit?: "celsius" | "fahrenheit";
   color?: string;
 };
+
+function convertTemp(celsius: number, unit: string): number {
+  return unit === "fahrenheit" ? celsius * 9 / 5 + 32 : celsius;
+}
 
 const POLL_INTERVAL_MS = 3000;
 
@@ -98,8 +103,10 @@ export class StatusAction extends SingletonAction<StatusSettings> {
       const state = device.state as DeviceState | undefined;
       let value = "";
 
+      const unit = settings.unit || "celsius";
+
       if (device.type === "temperature-sensor" && state?.temperature != null) {
-        value = `${state.temperature.toFixed(1)}°`;
+        value = `${convertTemp(state.temperature, unit).toFixed(1)}°`;
       } else if (device.type === "humidity-sensor" && state?.humidity != null) {
         value = `${Math.round(state.humidity)}%`;
       }

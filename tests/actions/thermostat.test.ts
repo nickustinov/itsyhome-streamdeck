@@ -182,6 +182,39 @@ describe("ThermostatAction", () => {
       expect(ev.action.setTitle).toHaveBeenCalledWith("");
     });
 
+    it("converts temperature to fahrenheit", async () => {
+      mockClient.getDeviceInfo.mockResolvedValue({
+        name: "AC", type: "thermostat", reachable: true,
+        state: { on: true, temperature: 22.5, targetTemperature: 24, mode: "cool" },
+      });
+
+      const ev = {
+        action: createMockAction(),
+        payload: { settings: { target: "AC", port: 0, label: "", display: "current-target", unit: "fahrenheit" } },
+      };
+
+      await action.onWillAppear(ev as any);
+
+      // 22.5 * 9/5 + 32 = 72.5 → 73°; 24 * 9/5 + 32 = 75.2 → 75°
+      expect(ev.action.setTitle).toHaveBeenCalledWith("73°/75°");
+    });
+
+    it("defaults to celsius when unit is not set", async () => {
+      mockClient.getDeviceInfo.mockResolvedValue({
+        name: "AC", type: "thermostat", reachable: true,
+        state: { on: true, temperature: 22.5, targetTemperature: 24, mode: "cool" },
+      });
+
+      const ev = {
+        action: createMockAction(),
+        payload: { settings: { target: "AC", port: 0, label: "", display: "current-target" } },
+      };
+
+      await action.onWillAppear(ev as any);
+
+      expect(ev.action.setTitle).toHaveBeenCalledWith("23°/24°");
+    });
+
     it("shows empty when display=current but no current temp", async () => {
       mockClient.getDeviceInfo.mockResolvedValue({
         name: "AC", type: "thermostat", reachable: true,

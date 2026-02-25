@@ -21,8 +21,16 @@
       <label class="sdpi-item-label">Temperature</label>
       <select id="display">
         <option value="current-target">Current / Target</option>
-        <option value="current">Current temponly</option>
+        <option value="current">Current temp only</option>
         <option value="target">Target only</option>
+      </select>
+    </div>
+
+    <div class="sdpi-item">
+      <label class="sdpi-item-label">Unit</label>
+      <select id="unit">
+        <option value="celsius">Celsius (&deg;C)</option>
+        <option value="fahrenheit">Fahrenheit (&deg;F)</option>
       </select>
     </div>
 
@@ -55,6 +63,7 @@
     const targetSelect = document.getElementById("target");
     const labelInput = document.getElementById("label");
     const displaySelect = document.getElementById("display");
+    const unitSelect = document.getElementById("unit");
     const portInput = document.getElementById("port");
     const refreshBtn = document.getElementById("refresh");
 
@@ -65,6 +74,7 @@
       portInput.value = settings.port || "";
       labelInput.value = settings.label || "";
       displaySelect.value = settings.display || "current-target";
+      unitSelect.value = settings.unit || "celsius";
       hideConnectionError();
       populateTargetSelect(targetSelect, settings.port, settings.target, { types: ["thermostat", "heater-cooler"], showGroups: false });
       offColorPicker.setInitialValue();
@@ -93,6 +103,10 @@
 
     displaySelect.addEventListener("change", () => {
       saveSettings({ display: displaySelect.value });
+    });
+
+    unitSelect.addEventListener("change", () => {
+      saveSettings({ unit: unitSelect.value });
     });
 
     portInput.addEventListener("change", () => {

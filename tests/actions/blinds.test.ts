@@ -45,7 +45,7 @@ describe("BlindsAction", () => {
 
       const ev = {
         action: createMockAction(),
-        payload: { settings: { target: "Blinds", direction: "open", label: "", port: 0 } },
+        payload: { settings: { target: "Blinds", label: "", port: 0 } },
       };
 
       await action.onWillAppear(ev as any);
@@ -54,26 +54,30 @@ describe("BlindsAction", () => {
       expect(ev.action.setTitle).toHaveBeenCalledWith("75%");
     });
 
-    it("shows direction icon when no target", async () => {
+    it("shows open icon when no target (default preview)", async () => {
       const ev = {
         action: createMockAction(),
-        payload: { settings: { target: "", direction: "close", label: "", port: 0 } },
-      };
-
-      await action.onWillAppear(ev as any);
-
-      expect(ev.action.setImage).toHaveBeenCalledWith("data:mock/arrows-out-line-vertical/off");
-    });
-
-    it("defaults direction to open", async () => {
-      const ev = {
-        action: createMockAction(),
-        payload: { settings: { target: "", direction: "", label: "", port: 0 } },
+        payload: { settings: { target: "", label: "", port: 0 } },
       };
 
       await action.onWillAppear(ev as any);
 
       expect(ev.action.setImage).toHaveBeenCalledWith("data:mock/arrows-out-line-vertical/on");
+    });
+
+    it("shows closed icon when position is 0", async () => {
+      mockClient.getDeviceInfo.mockResolvedValue({
+        name: "Blinds", type: "blinds", reachable: true, state: { position: 0 },
+      });
+
+      const ev = {
+        action: createMockAction(),
+        payload: { settings: { target: "Blinds", label: "", port: 0 } },
+      };
+
+      await action.onWillAppear(ev as any);
+
+      expect(ev.action.setImage).toHaveBeenCalledWith("data:mock/arrows-out-line-vertical/off");
     });
 
     it("shows label with position", async () => {
@@ -83,7 +87,7 @@ describe("BlindsAction", () => {
 
       const ev = {
         action: createMockAction(),
-        payload: { settings: { target: "Blinds", direction: "open", label: "Living", port: 0 } },
+        payload: { settings: { target: "Blinds", label: "Living", port: 0 } },
       };
 
       await action.onWillAppear(ev as any);
@@ -98,7 +102,7 @@ describe("BlindsAction", () => {
 
       const ev = {
         action: createMockAction(),
-        payload: { settings: { target: "Blinds", direction: "open", label: "Room", port: 0 } },
+        payload: { settings: { target: "Blinds", label: "Room", port: 0 } },
       };
 
       await action.onWillAppear(ev as any);
@@ -113,7 +117,7 @@ describe("BlindsAction", () => {
 
       const ev = {
         action: createMockAction(),
-        payload: { settings: { target: "Blinds", direction: "open", label: "", port: 0 } },
+        payload: { settings: { target: "Blinds", label: "", port: 0 } },
       };
 
       await action.onWillAppear(ev as any);
@@ -128,7 +132,7 @@ describe("BlindsAction", () => {
 
       const ev = {
         action: createMockAction(),
-        payload: { settings: { target: "Blinds", direction: "open", label: "", port: 6666 } },
+        payload: { settings: { target: "Blinds", label: "", port: 6666 } },
       };
 
       await action.onWillAppear(ev as any);
@@ -143,7 +147,7 @@ describe("BlindsAction", () => {
 
       const ev = {
         action: createMockAction(),
-        payload: { settings: { target: "Blinds", direction: "close", label: "", port: 0 } },
+        payload: { settings: { target: "Blinds", label: "", port: 0 } },
       };
 
       await action.onWillAppear(ev as any);
@@ -156,7 +160,7 @@ describe("BlindsAction", () => {
 
       const ev = {
         action: createMockAction(),
-        payload: { settings: { target: "Blinds", direction: "open", label: "", port: 0 } },
+        payload: { settings: { target: "Blinds", label: "", port: 0 } },
       };
 
       await action.onWillAppear(ev as any);
@@ -169,7 +173,7 @@ describe("BlindsAction", () => {
 
       const ev = {
         action: createMockAction(),
-        payload: { settings: { target: "Blinds", direction: "open", label: "", port: 0 } },
+        payload: { settings: { target: "Blinds", label: "", port: 0 } },
       };
 
       await action.onWillAppear(ev as any);
@@ -182,7 +186,7 @@ describe("BlindsAction", () => {
     it("stops polling when last context disappears", async () => {
       const ev = {
         action: { ...createMockAction(), id: "ctx-1" },
-        payload: { settings: { target: "", direction: "open", label: "", port: 0 } },
+        payload: { settings: { target: "", label: "", port: 0 } },
       };
 
       await action.onWillAppear(ev as any);
@@ -198,7 +202,7 @@ describe("BlindsAction", () => {
 
       const ev = {
         action: createMockAction(),
-        payload: { settings: { target: "Blinds", direction: "open", label: "", port: 0 } },
+        payload: { settings: { target: "Blinds", label: "", port: 0 } },
       };
 
       await action.onDidReceiveSettings(ev as any);
@@ -206,15 +210,15 @@ describe("BlindsAction", () => {
       expect(ev.action.setTitle).toHaveBeenCalledWith("100%");
     });
 
-    it("shows direction icon when no target", async () => {
+    it("shows open icon when no target", async () => {
       const ev = {
         action: createMockAction(),
-        payload: { settings: { target: "", direction: "close", label: "", port: 0 } },
+        payload: { settings: { target: "", label: "", port: 0 } },
       };
 
       await action.onDidReceiveSettings(ev as any);
 
-      expect(ev.action.setImage).toHaveBeenCalledWith("data:mock/arrows-out-line-vertical/off");
+      expect(ev.action.setImage).toHaveBeenCalledWith("data:mock/arrows-out-line-vertical/on");
     });
 
     it("uses custom port", async () => {
@@ -224,7 +228,7 @@ describe("BlindsAction", () => {
 
       const ev = {
         action: createMockAction(),
-        payload: { settings: { target: "Blinds", direction: "open", label: "", port: 2222 } },
+        payload: { settings: { target: "Blinds", label: "", port: 2222 } },
       };
 
       await action.onDidReceiveSettings(ev as any);
@@ -237,7 +241,7 @@ describe("BlindsAction", () => {
     it("shows alert when no target", async () => {
       const ev = {
         action: createMockAction(),
-        payload: { settings: { target: "", direction: "open", label: "", port: 0 } },
+        payload: { settings: { target: "", label: "", port: 0 } },
       };
 
       await action.onKeyDown(ev as any);
@@ -245,42 +249,60 @@ describe("BlindsAction", () => {
       expect(ev.action.showAlert).toHaveBeenCalled();
     });
 
-    it("shows alert when no direction", async () => {
-      const ev = {
-        action: createMockAction(),
-        payload: { settings: { target: "Blinds", direction: "", label: "", port: 0 } },
-      };
-
-      await action.onKeyDown(ev as any);
-
-      expect(ev.action.showAlert).toHaveBeenCalled();
-    });
-
-    it("sets position to 100 for open direction", async () => {
+    it("closes when position > 0", async () => {
+      mockClient.getDeviceInfo.mockResolvedValue({
+        name: "Blinds", type: "blinds", reachable: true, state: { position: 75 },
+      });
       mockClient.setPosition.mockResolvedValue({ status: "success" });
 
+      const mockAction = createMockAction();
       const ev = {
-        action: createMockAction(),
-        payload: { settings: { target: "Blinds", direction: "open", label: "", port: 0 } },
+        action: mockAction,
+        payload: { settings: { target: "Blinds", label: "", port: 0 } },
       };
 
-      await action.onKeyDown(ev as any);
-
-      expect(mockClient.setPosition).toHaveBeenCalledWith("Blinds", 100);
-      expect(ev.action.showOk).toHaveBeenCalled();
-    });
-
-    it("sets position to 0 for close direction", async () => {
-      mockClient.setPosition.mockResolvedValue({ status: "success" });
-
-      const ev = {
-        action: createMockAction(),
-        payload: { settings: { target: "Blinds", direction: "close", label: "", port: 0 } },
-      };
+      // Prime the cache via updateDisplay
+      await action.onWillAppear(ev as any);
 
       await action.onKeyDown(ev as any);
 
       expect(mockClient.setPosition).toHaveBeenCalledWith("Blinds", 0);
+      expect(mockAction.showOk).toHaveBeenCalled();
+    });
+
+    it("opens when position is 0", async () => {
+      mockClient.getDeviceInfo.mockResolvedValue({
+        name: "Blinds", type: "blinds", reachable: true, state: { position: 0 },
+      });
+      mockClient.setPosition.mockResolvedValue({ status: "success" });
+
+      const mockAction = createMockAction();
+      const ev = {
+        action: mockAction,
+        payload: { settings: { target: "Blinds", label: "", port: 0 } },
+      };
+
+      // Prime the cache via updateDisplay
+      await action.onWillAppear(ev as any);
+
+      await action.onKeyDown(ev as any);
+
+      expect(mockClient.setPosition).toHaveBeenCalledWith("Blinds", 100);
+      expect(mockAction.showOk).toHaveBeenCalled();
+    });
+
+    it("opens when position is unknown (safe default)", async () => {
+      mockClient.setPosition.mockResolvedValue({ status: "success" });
+
+      const ev = {
+        action: createMockAction(),
+        payload: { settings: { target: "Blinds", label: "", port: 0 } },
+      };
+
+      // No onWillAppear call – cache is empty
+      await action.onKeyDown(ev as any);
+
+      expect(mockClient.setPosition).toHaveBeenCalledWith("Blinds", 100);
       expect(ev.action.showOk).toHaveBeenCalled();
     });
 
@@ -289,7 +311,7 @@ describe("BlindsAction", () => {
 
       const ev = {
         action: createMockAction(),
-        payload: { settings: { target: "Blinds", direction: "open", label: "", port: 0 } },
+        payload: { settings: { target: "Blinds", label: "", port: 0 } },
       };
 
       await action.onKeyDown(ev as any);
@@ -303,7 +325,7 @@ describe("BlindsAction", () => {
 
       const ev = {
         action: createMockAction(),
-        payload: { settings: { target: "Blinds", direction: "open", label: "", port: 0 } },
+        payload: { settings: { target: "Blinds", label: "", port: 0 } },
       };
 
       await action.onKeyDown(ev as any);
@@ -317,11 +339,11 @@ describe("BlindsAction", () => {
     it("does not start duplicate timers", async () => {
       const ev1 = {
         action: { ...createMockAction(), id: "ctx-1" },
-        payload: { settings: { target: "", direction: "open", label: "", port: 0 } },
+        payload: { settings: { target: "", label: "", port: 0 } },
       };
       const ev2 = {
         action: { ...createMockAction(), id: "ctx-2" },
-        payload: { settings: { target: "", direction: "open", label: "", port: 0 } },
+        payload: { settings: { target: "", label: "", port: 0 } },
       };
 
       await action.onWillAppear(ev1 as any);
@@ -330,7 +352,7 @@ describe("BlindsAction", () => {
 
     it("polls all actions at 3s intervals", async () => {
       const mockAction = createMockAction();
-      mockAction.getSettings.mockResolvedValue({ target: "Blinds", direction: "open", label: "" });
+      mockAction.getSettings.mockResolvedValue({ target: "Blinds", label: "" });
       mockClient.getDeviceInfo.mockResolvedValue({
         name: "Blinds", type: "blinds", reachable: true, state: { position: 50 },
       });
@@ -342,7 +364,7 @@ describe("BlindsAction", () => {
 
       const ev = {
         action: createMockAction(),
-        payload: { settings: { target: "", direction: "open", label: "", port: 0 } },
+        payload: { settings: { target: "", label: "", port: 0 } },
       };
 
       await action.onWillAppear(ev as any);
@@ -359,7 +381,7 @@ describe("BlindsAction", () => {
 
     it("skips actions with no target", async () => {
       const mockAction = createMockAction();
-      mockAction.getSettings.mockResolvedValue({ target: "", direction: "open", label: "" });
+      mockAction.getSettings.mockResolvedValue({ target: "", label: "" });
 
       Object.defineProperty(action, "actions", {
         get: () => [mockAction],
@@ -368,7 +390,7 @@ describe("BlindsAction", () => {
 
       const ev = {
         action: createMockAction(),
-        payload: { settings: { target: "", direction: "open", label: "", port: 0 } },
+        payload: { settings: { target: "", label: "", port: 0 } },
       };
 
       await action.onWillAppear(ev as any);

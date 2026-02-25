@@ -14,7 +14,6 @@ const DEFAULT_OPEN_COLOR = "#ff9500"; // Orange
 
 type BlindsSettings = {
   target: string;
-  direction: "open" | "close";
   label: string;
   port: number;
   closedColor?: string;
@@ -28,6 +27,7 @@ export class BlindsAction extends SingletonAction<BlindsSettings> {
   private client = new ItsyhomeClient();
   private pollTimer: ReturnType<typeof setInterval> | null = null;
   private activeContexts = new Set<string>();
+  private positionCache = new Map<string, number>();
 
   override async onWillAppear(ev: WillAppearEvent<BlindsSettings>): Promise<void> {
     const { target, port } = ev.payload.settings;
@@ -40,7 +40,7 @@ export class BlindsAction extends SingletonAction<BlindsSettings> {
     if (target) {
       await this.updateDisplay(ev.action, target, ev.payload.settings);
     } else {
-      await this.applyDirectionIcon(ev.action, ev.payload.settings);
+      await this.applyIcon(ev.action, ev.payload.settings);
     }
 
     this.startPolling();
@@ -63,25 +63,25 @@ export class BlindsAction extends SingletonAction<BlindsSettings> {
     if (target) {
       await this.updateDisplay(ev.action, target, ev.payload.settings);
     } else {
-      await this.applyDirectionIcon(ev.action, ev.payload.settings);
+      await this.applyIcon(ev.action, ev.payload.settings);
     }
   }
 
   override async onKeyDown(ev: KeyDownEvent<BlindsSettings>): Promise<void> {
     const { target } = ev.payload.settings;
-    const direction = ev.payload.settings.direction || "open";
 
     if (!target) {
       await ev.action.showAlert();
       return;
     }
 
-    const position = direction === "open" ? 100 : 0;
+    const cached = this.positionCache.get(target);
+    const position = cached != null && cached > 0 ? 0 : 100;
 
     try {
       const result = await this.client.setPosition(target, position);
       if (result.status === "error") {
-        streamDeck.logger.error(`Blinds ${direction} failed: ${result.message}`);
+        streamDeck.logger.error(`Blinds toggle failed: ${result.message}`);
         await ev.action.showAlert();
         return;
       }
@@ -113,13 +113,13 @@ export class BlindsAction extends SingletonAction<BlindsSettings> {
     }
   }
 
-  private async applyDirectionIcon(
+  private async applyIcon(
     action: { setImage(image: string): Promise<void> },
     settings: BlindsSettings,
     apiIcon?: string,
+    position?: number,
   ): Promise<void> {
-    const direction = settings.direction || "open";
-    const isOpen = direction === "open";
+    const isOpen = position != null ? position > 0 : true;
     const iconName = apiIcon ?? "arrows-out-line-vertical";
     const color = isOpen
       ? (settings.openColor || DEFAULT_OPEN_COLOR)
@@ -141,7 +141,11 @@ export class BlindsAction extends SingletonAction<BlindsSettings> {
       const state = device.state as DeviceState | undefined;
       const position = state?.position;
 
-      await this.applyDirectionIcon(action, settings, device.icon);
+      if (position != null) {
+        this.positionCache.set(target, position);
+      }
+
+      await this.applyIcon(action, settings, device.icon, position);
       const posStr = position != null ? `${position}%` : "";
       const label = settings.label;
       const title = label && posStr ? `${label}\n${posStr}` : label || posStr;

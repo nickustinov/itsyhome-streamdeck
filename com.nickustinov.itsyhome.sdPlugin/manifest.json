@@ -1,7 +1,7 @@
 {
   "$schema": "https://schemas.elgato.com/streamdeck/plugins/manifest.json",
   "Name": "Itsyhome",
-  "Version": "1.1.0.0",
+  "Version": "1.2.0.0",
   "Author": "Nick Ustinov",
   "Description": "Control your HomeKit and Home Assistant devices from Stream Deck via Itsyhome",
   "Category": "Itsyhome",

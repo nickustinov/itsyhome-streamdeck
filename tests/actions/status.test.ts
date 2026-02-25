@@ -69,6 +69,37 @@ describe("StatusAction", () => {
       expect(ev.action.setImage).toHaveBeenCalledWith("data:mock/drop/on");
     });
 
+    it("converts temperature to fahrenheit", async () => {
+      mockClient.getDeviceInfo.mockResolvedValue({
+        name: "Temp", type: "temperature-sensor", reachable: true, state: { temperature: 22.456 },
+      });
+
+      const ev = {
+        action: createMockAction(),
+        payload: { settings: { target: "Temp", port: 0, label: "", unit: "fahrenheit" } },
+      };
+
+      await action.onWillAppear(ev as any);
+
+      // 22.456 * 9/5 + 32 = 72.4208 → toFixed(1) = "72.4"
+      expect(ev.action.setTitle).toHaveBeenCalledWith("72.4°");
+    });
+
+    it("defaults to celsius when unit is not set", async () => {
+      mockClient.getDeviceInfo.mockResolvedValue({
+        name: "Temp", type: "temperature-sensor", reachable: true, state: { temperature: 22.456 },
+      });
+
+      const ev = {
+        action: createMockAction(),
+        payload: { settings: { target: "Temp", port: 0, label: "" } },
+      };
+
+      await action.onWillAppear(ev as any);
+
+      expect(ev.action.setTitle).toHaveBeenCalledWith("22.5°");
+    });
+
     it("shows label with value", async () => {
       mockClient.getDeviceInfo.mockResolvedValue({
         name: "Temp", type: "temperature-sensor", reachable: true, state: { temperature: 20.0 },

@@ -24,6 +24,7 @@ type ThermostatSettings = {
   port: number;
   label: string;
   display: "current-target" | "current" | "target";
+  unit?: "celsius" | "fahrenheit";
   offColor?: string;
 };
 
@@ -33,6 +34,10 @@ type ThermostatCache = {
   mode?: string;
   icon?: string;
 };
+
+function convertTemp(celsius: number, unit: string): number {
+  return unit === "fahrenheit" ? celsius * 9 / 5 + 32 : celsius;
+}
 
 const POLL_INTERVAL_MS = 3000;
 
@@ -142,9 +147,13 @@ export class ThermostatAction extends SingletonAction<ThermostatSettings> {
       const state = device.state as DeviceState | undefined;
       const isOn = state?.on ?? false;
       const mode = state?.mode;
-      const current = state?.temperature;
-      const targetTemp = state?.targetTemperature;
+      const rawCurrent = state?.temperature;
+      const rawTarget = state?.targetTemperature;
       const display = settings.display || "current-target";
+      const unit = settings.unit || "celsius";
+
+      const current = rawCurrent != null ? convertTemp(rawCurrent, unit) : undefined;
+      const targetTemp = rawTarget != null ? convertTemp(rawTarget, unit) : undefined;
 
       const icon = device.icon;
       this.stateCache.set(target, { isOn, deviceType: device.type, mode, icon });

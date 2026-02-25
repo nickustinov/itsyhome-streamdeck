@@ -18,14 +18,6 @@
     </div>
 
     <div class="sdpi-item">
-      <label class="sdpi-item-label">Direction</label>
-      <select id="direction">
-        <option value="open">Open</option>
-        <option value="close">Close</option>
-      </select>
-    </div>
-
-    <div class="sdpi-item">
       <button class="refresh-btn" id="refresh">Refresh devices</button>
     </div>
 
@@ -49,7 +41,7 @@
     </div>
 
     <div class="sdpi-info">
-      Open or close blinds. The button shows the current position percentage.
+      Toggle blinds open and closed. The button shows the current position percentage.
     </div>
   </div>
 
@@ -58,7 +50,6 @@
   <script>
     const targetSelect = document.getElementById("target");
     const labelInput = document.getElementById("label");
-    const directionSelect = document.getElementById("direction");
     const portInput = document.getElementById("port");
     const refreshBtn = document.getElementById("refresh");
 
@@ -69,7 +60,6 @@
     function onSettingsLoaded(settings) {
       portInput.value = settings.port || "";
       labelInput.value = settings.label || "";
-      directionSelect.value = settings.direction || "open";
       hideConnectionError();
       populateTargetSelect(targetSelect, settings.port, settings.target, { types: ["blinds"], showGroups: false });
       closedColorPicker.setInitialValue();
@@ -95,10 +85,6 @@
 
     labelInput.addEventListener("change", () => {
       saveSettings({ label: labelInput.value });
-    });
-
-    directionSelect.addEventListener("change", () => {
-      saveSettings({ direction: directionSelect.value });
     });
 
     portInput.addEventListener("change", () => {

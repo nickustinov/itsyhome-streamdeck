@@ -18,6 +18,14 @@
     </div>
 
     <div class="sdpi-item">
+      <label class="sdpi-item-label">Unit</label>
+      <select id="unit">
+        <option value="celsius">Celsius (&deg;C)</option>
+        <option value="fahrenheit">Fahrenheit (&deg;F)</option>
+      </select>
+    </div>
+
+    <div class="sdpi-item">
       <button class="refresh-btn" id="refresh">Refresh devices</button>
     </div>
 
@@ -45,6 +53,7 @@
   <script>
     const targetSelect = document.getElementById("target");
     const labelInput = document.getElementById("label");
+    const unitSelect = document.getElementById("unit");
     const portInput = document.getElementById("port");
     const refreshBtn = document.getElementById("refresh");
 
@@ -54,6 +63,7 @@
     function onSettingsLoaded(settings) {
       portInput.value = settings.port || "";
       labelInput.value = settings.label || "";
+      unitSelect.value = settings.unit || "celsius";
       hideConnectionError();
       populateTargetSelect(targetSelect, settings.port, settings.target, { types: ["temperature-sensor", "humidity-sensor"], showGroups: false });
       colorPicker.setInitialValue();
@@ -78,6 +88,10 @@
 
     labelInput.addEventListener("change", () => {
       saveSettings({ label: labelInput.value });
+    });
+
+    unitSelect.addEventListener("change", () => {
+      saveSettings({ unit: unitSelect.value });
     });
 
     portInput.addEventListener("change", () => {

@@ -1,5 +1,13 @@
 # Changelog
 
+## 1.2.0
+
+Blinds toggle and temperature unit support.
+
+- Convert blinds action to a single toggle button (was open/close on separate buttons)
+- Add temperature unit selector (Celsius/Fahrenheit) to thermostat and status actions
+- Fix typo in thermostat property inspector ("Current temponly" → "Current temp only")
+
 ## 1.1.0
 
 Home Assistant compatibility and bug fixes.
