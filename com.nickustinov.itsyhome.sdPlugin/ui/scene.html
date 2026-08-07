@@ -22,8 +22,21 @@
     </div>
 
     <div class="sdpi-item">
-      <label class="sdpi-item-label">Color</label>
-      <div id="colorPicker"></div>
+      <label class="sdpi-item-label">Off color</label>
+      <div id="offColorPicker"></div>
+    </div>
+
+    <div class="sdpi-item">
+      <label class="sdpi-item-label">On color</label>
+      <div id="onColorPicker"></div>
+    </div>
+
+    <div class="sdpi-item">
+      <label class="sdpi-item-label">On press</label>
+      <select id="toggle">
+        <option value="run">Always run scene</option>
+        <option value="toggle">Run, turn off when active</option>
+      </select>
     </div>
 
     <div class="sdpi-item">
@@ -36,7 +49,9 @@
     </div>
 
     <div class="sdpi-info">
-      Select a HomeKit scene to execute when the button is pressed.
+      Select a HomeKit scene to execute when the button is pressed. The key shows
+      whether the scene is currently active, refreshed every 3 seconds. Scenes without
+      a granular action list report no state and stay fire-only.
     </div>
   </div>
 
@@ -47,17 +62,26 @@
     const labelInput = document.getElementById("label");
     const portInput = document.getElementById("port");
     const refreshBtn = document.getElementById("refresh");
+    const toggleSelect = document.getElementById("toggle");
 
-    // Initialize color picker
-    const colorPicker = initColorPicker("colorPicker", "color", "#ff9500", saveSettings, getSettings);
+    // Initialize color pickers. "color" is the legacy single-colour setting and
+    // seeds the on colour so existing keys keep their appearance.
+    const offColorPicker = initColorPicker("offColorPicker", "offColor", "#8e8e93", saveSettings, getSettings);
+    const onColorPicker = initColorPicker("onColorPicker", "onColor", getSettings().color || "#ff9500", saveSettings, getSettings);
 
     function onSettingsLoaded(settings) {
       portInput.value = settings.port || "";
       labelInput.value = settings.label || "";
+      toggleSelect.value = settings.toggle ? "toggle" : "run";
       hideConnectionError();
       populateSceneSelect(sceneSelect, settings.port, settings.scene);
-      colorPicker.setInitialValue();
+      offColorPicker.setInitialValue();
+      onColorPicker.setInitialValue();
     }
+
+    toggleSelect.addEventListener("change", () => {
+      saveSettings({ toggle: toggleSelect.value === "toggle" });
+    });
 
     sceneSelect.addEventListener("change", () => {
       const scene = sceneSelect.value;

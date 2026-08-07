@@ -50,6 +50,7 @@ export function createMockClient() {
     setBrightness: vi.fn(),
     setPosition: vi.fn(),
     executeScene: vi.fn(),
+    deactivateScene: vi.fn(),
     listDevices: vi.fn(),
     listScenes: vi.fn(),
     listGroups: vi.fn(),

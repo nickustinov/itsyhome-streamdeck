@@ -53,10 +53,17 @@
       "Controllers": [
         "Keypad"
       ],
+      "DisableAutomaticStates": true,
       "States": [
         {
           "Image": "imgs/actions/scene/key",
-          "TitleAlignment": "bottom"
+          "TitleAlignment": "bottom",
+          "Name": "Off"
+        },
+        {
+          "Image": "imgs/actions/scene/key",
+          "TitleAlignment": "bottom",
+          "Name": "On"
         }
       ]
     },
