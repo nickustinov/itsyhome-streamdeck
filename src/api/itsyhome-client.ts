@@ -34,6 +34,16 @@ export type DeviceState = {
 export type SceneInfo = {
   name: string;
   icon?: string;
+  /**
+   * Present when the scene has a granular action list the server can compare
+   * against current device state. Omitted for scenes without actions (e.g. HA
+   * snapshot scenes), in which case clients fall back to fire-only behaviour.
+   */
+  state?: SceneState;
+};
+
+export type SceneState = {
+  on: boolean;
 };
 
 export type GroupInfo = {
@@ -102,6 +112,11 @@ export class ItsyhomeClient {
 
   async executeScene(name: string): Promise<ActionResponse> {
     return this.get<ActionResponse>(`/scene/${encodeURIComponent(name)}`);
+  }
+
+  /** Deactivate a scene, using Apple Home semantics (only reversible characteristics are touched). */
+  async deactivateScene(name: string): Promise<ActionResponse> {
+    return this.get<ActionResponse>(`/off/scene/${encodeURIComponent(name)}`);
   }
 
   async armSecurity(target: string, mode: number): Promise<ActionResponse> {

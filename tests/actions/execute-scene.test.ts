@@ -179,4 +179,146 @@ describe("ExecuteSceneAction", () => {
       expect(streamDeck.logger.error).toHaveBeenCalled();
     });
   });
+
+  describe("state display", () => {
+    beforeEach(() => {
+      mockClient.listScenes.mockResolvedValue([
+        { name: "Active Scene", icon: "sun", state: { on: true } },
+        { name: "Inactive Scene", icon: "moon", state: { on: false } },
+        { name: "Stateless Scene", icon: "star" },
+      ]);
+    });
+
+    it("renders an active scene as on", async () => {
+      const ev = {
+        action: createMockAction(),
+        payload: { settings: { scene: "Active Scene", port: 0 } },
+      };
+
+      await action.onWillAppear(ev as any);
+
+      expect(ev.action.setImage).toHaveBeenCalledWith("data:mock/sun/on");
+      expect(ev.action.setState).toHaveBeenCalledWith(1);
+    });
+
+    it("renders an inactive scene as off", async () => {
+      const ev = {
+        action: createMockAction(),
+        payload: { settings: { scene: "Inactive Scene", port: 0 } },
+      };
+
+      await action.onWillAppear(ev as any);
+
+      expect(ev.action.setImage).toHaveBeenCalledWith("data:mock/moon/off");
+      expect(ev.action.setState).toHaveBeenCalledWith(0);
+    });
+
+    it("keeps scenes without reported state looking active (fire-only)", async () => {
+      const ev = {
+        action: createMockAction(),
+        payload: { settings: { scene: "Stateless Scene", port: 0 } },
+      };
+
+      await action.onWillAppear(ev as any);
+
+      expect(ev.action.setImage).toHaveBeenCalledWith("data:mock/star/on");
+      expect(ev.action.setState).toHaveBeenCalledWith(1);
+    });
+
+    it("flips to off optimistically after deactivating", async () => {
+      mockClient.deactivateScene.mockResolvedValue({ status: "success" });
+
+      const ev = {
+        action: createMockAction(),
+        payload: { settings: { scene: "Active Scene", port: 0, toggle: true } },
+      };
+
+      await action.onWillAppear(ev as any);
+      await action.onKeyDown(ev as any);
+
+      expect(mockClient.deactivateScene).toHaveBeenCalledWith("Active Scene");
+      expect(ev.action.setImage).toHaveBeenLastCalledWith("data:mock/sun/off");
+      expect(ev.action.setState).toHaveBeenLastCalledWith(0);
+    });
+  });
+
+  describe("toggle behaviour", () => {
+    beforeEach(() => {
+      mockClient.listScenes.mockResolvedValue([
+        { name: "Active Scene", icon: "sun", state: { on: true } },
+        { name: "Inactive Scene", icon: "moon", state: { on: false } },
+        { name: "Stateless Scene", icon: "star" },
+      ]);
+      mockClient.executeScene.mockResolvedValue({ status: "success" });
+      mockClient.deactivateScene.mockResolvedValue({ status: "success" });
+    });
+
+    it("deactivates an active scene when toggle is enabled", async () => {
+      const ev = {
+        action: createMockAction(),
+        payload: { settings: { scene: "Active Scene", port: 0, toggle: true } },
+      };
+
+      await action.onWillAppear(ev as any);
+      await action.onKeyDown(ev as any);
+
+      expect(mockClient.deactivateScene).toHaveBeenCalledWith("Active Scene");
+      expect(mockClient.executeScene).not.toHaveBeenCalled();
+    });
+
+    it("runs an inactive scene when toggle is enabled", async () => {
+      const ev = {
+        action: createMockAction(),
+        payload: { settings: { scene: "Inactive Scene", port: 0, toggle: true } },
+      };
+
+      await action.onWillAppear(ev as any);
+      await action.onKeyDown(ev as any);
+
+      expect(mockClient.executeScene).toHaveBeenCalledWith("Inactive Scene");
+      expect(mockClient.deactivateScene).not.toHaveBeenCalled();
+    });
+
+    it("always runs the scene when toggle is disabled", async () => {
+      const ev = {
+        action: createMockAction(),
+        payload: { settings: { scene: "Active Scene", port: 0 } },
+      };
+
+      await action.onWillAppear(ev as any);
+      await action.onKeyDown(ev as any);
+
+      expect(mockClient.executeScene).toHaveBeenCalledWith("Active Scene");
+      expect(mockClient.deactivateScene).not.toHaveBeenCalled();
+    });
+
+    it("never deactivates a scene that reports no state", async () => {
+      const ev = {
+        action: createMockAction(),
+        payload: { settings: { scene: "Stateless Scene", port: 0, toggle: true } },
+      };
+
+      await action.onWillAppear(ev as any);
+      await action.onKeyDown(ev as any);
+
+      expect(mockClient.executeScene).toHaveBeenCalledWith("Stateless Scene");
+      expect(mockClient.deactivateScene).not.toHaveBeenCalled();
+    });
+  });
+
+  describe("polling", () => {
+    it("stops polling once the last key disappears", async () => {
+      const clearSpy = vi.spyOn(global, "clearInterval");
+
+      await action.onWillAppear({
+        action: createMockAction(),
+        payload: { settings: { scene: "Good Morning", port: 0 } },
+      } as any);
+
+      action.onWillDisappear({ action: { id: "test-action-id" }, payload: { settings: {} } } as any);
+
+      expect(clearSpy).toHaveBeenCalled();
+      clearSpy.mockRestore();
+    });
+  });
 });
